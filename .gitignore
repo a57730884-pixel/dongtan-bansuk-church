@@ -8,3 +8,8 @@ supabase/교적_등록.sql
 supabase/*_data*.sql
 *.xlsx
 *.xls
+
+# 설계서 원본은 목사님 PC에만 둡니다 (면담 내용·비용 계획이 담겨 있어 공개 저장소에 올리지 않음)
+*.docx
+*.hwp
+*.hwpx
