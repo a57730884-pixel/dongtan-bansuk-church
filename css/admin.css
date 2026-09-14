@@ -1,0 +1,58 @@
+/* ============================================================
+   동탄반석교회 — 관리 화면 공통 스타일 (교적관리 · 재정관리 · 나의 기록)
+   원본: 운평장로교회 시스템의 각 페이지 인라인 스타일을 한 파일로 모은 것.
+   js/gyojeok.js · js/finance.js 가 이 클래스 이름들을 그대로 씁니다 —
+   이름을 바꾸면 두 파일이 함께 깨집니다.
+   ============================================================ */
+
+.fin-wrap{max-width:1280px}
+
+/* 탭 (교적관리 상단) */
+.fin-tabs{display:flex;gap:6px;border-bottom:2px solid var(--line,#e3e7ee);margin:8px 0 20px;flex-wrap:wrap}
+.fin-tabs button{position:relative;background:none;border:none;padding:10px 16px;font-weight:700;color:var(--ink-soft,#7b8794);cursor:pointer;font-family:inherit;transition:color .2s ease,transform .2s ease}
+.fin-tabs button::after{content:"";position:absolute;left:14px;right:14px;bottom:-2px;height:3px;border-radius:3px;background:var(--accent,#123a63);transform:scaleX(0);transform-origin:center;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.fin-tabs button:hover{color:var(--accent,#123a63);transform:translateY(-1px)}
+.fin-tabs button:hover::after{transform:scaleX(1)}
+.fin-tabs button.active{color:var(--accent,#123a63)}
+.fin-tabs button.active::after{transform:scaleX(1)}
+
+/* 메뉴 (재정관리 상단 — 묶음 메뉴 + 하위 항목) */
+.fin-menu{display:flex;gap:2px;flex-wrap:wrap;border-bottom:2px solid var(--line,#e3e7ee);margin:8px 0 20px;position:sticky;top:74px;background:var(--paper,#fff);z-index:40;box-shadow:0 6px 8px -6px rgba(0,0,0,.08)}
+.fin-menu .fm-top{background:none;border:none;padding:11px 18px;font-weight:700;color:var(--ink-soft,#7b8794);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;font-family:inherit;font-size:1rem;white-space:nowrap}
+.fin-menu .fm-top.active,.fin-menu .fm-group:hover .fm-top{color:var(--accent,#123a63);border-bottom-color:var(--accent,#123a63)}
+.fm-group{position:relative}
+.fm-drop{position:absolute;top:100%;left:0;background:#fff;border:1px solid var(--line,#e3e7ee);border-radius:0 8px 8px 8px;box-shadow:0 10px 26px rgba(0,0,0,.13);min-width:170px;padding:6px;display:none;z-index:60}
+.fm-group:hover .fm-drop,.fm-group.open .fm-drop{display:block}
+.fm-drop button{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 13px;border-radius:7px;cursor:pointer;font:inherit;color:var(--ink,#1a1a1a)}
+.fm-drop button:hover{background:#f5f8fc}
+.fm-drop button.active{background:var(--accent,#123a63);color:#fff}
+@media (max-width:860px){ .fin-menu{top:62px} }
+
+/* 카드 · 표 */
+.fin-card{background:#fff;border:1px solid var(--line,#e3e7ee);border-radius:12px;padding:18px;margin-bottom:18px}
+.fin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 14px}
+.fin-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.fin-table th,.fin-table td{padding:8px 9px;border-bottom:1px solid var(--line,#eef1f5);text-align:left;white-space:nowrap}
+.fin-table td.num,.fin-table th.num{text-align:right;font-variant-numeric:tabular-nums}
+.fin-msg{font-size:.88rem}
+
+/* 자동완성(헌금자 검색) */
+.fin-sugg{position:absolute;background:#fff;border:1px solid var(--line,#e3e7ee);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.1);max-height:230px;overflow:auto;z-index:20;min-width:220px}
+.fin-sugg div{padding:8px 11px;cursor:pointer;font-size:.88rem;border-bottom:1px solid #f0f0f0}
+.fin-sugg div:hover,.fin-sugg div.hi{background:#f5f8fc}
+
+/* 알약 배지 */
+.fin-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:700}
+.fin-pill.in{background:#e8f6ee;color:#1e874b}
+.fin-pill.out{background:#fdecea;color:#c0392b}
+
+/* 기부금영수증 */
+.rcp-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.74rem;font-weight:700}
+.rcp-badge.ok{background:#e8f6ee;color:#1e874b}
+.rc-r{display:inline-flex;align-items:center;gap:4px;font-size:.86rem;margin-right:6px;cursor:pointer}
+
+/* 작은 입력 묶음 (교적 추가 폼) */
+.sw{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem}
+.sw input{width:16px;height:16px}
+.af-field label{display:block;font-size:.8rem;color:var(--ink-soft,#7b8794);margin-bottom:4px}
+.af-field input,.af-field select{width:100%;padding:8px 10px;border:1px solid #dfe5ee;border-radius:8px;font:inherit}

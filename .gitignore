@@ -1,0 +1,10 @@
+# 윈도우 · OneDrive 가 만드는 파일
+desktop.ini
+Thumbs.db
+.DS_Store
+
+# 교적·재정 실데이터는 저장소에 올리지 않습니다 (개인정보)
+supabase/교적_등록.sql
+supabase/*_data*.sql
+*.xlsx
+*.xls

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-140 -10 1120 1140" role="img" aria-label="동탄반석교회">
+  <!-- 브라우저 탭 아이콘. images/logo.svg 와 같은 그림을 정사각 화면에 맞춘 것입니다. -->
+  <g stroke-width="26" stroke-linejoin="round">
+    <path d="M14 14 L392 84 L330 880 L14 934 Z" fill="#3ab8f3" stroke="#3ab8f3" />
+    <path d="M508 150 L826 66 L826 1100 L446 1012 Z" fill="#8dce0a" stroke="#8dce0a" />
+  </g>
+  <rect x="176" y="358" width="488" height="80" fill="#fff" />
+</svg>

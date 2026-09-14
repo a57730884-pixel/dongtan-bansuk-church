@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>동탄반석교회</title>
+  <meta name="description" content="동탄반석교회 — 예배 안내, 주일 설교, 교회 소식을 전합니다." />
+  <meta property="og:title" content="동탄반석교회" />
+  <meta property="og:description" content="예배 안내 · 주일 설교 · 교회 소식" />
+  <meta name="theme-color" content="#0f7bb5" />
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
+</head>
+<body>
+
+  <!-- ===== 히어로 =====
+       배경 그림을 넣으려면 아래 style 의 --hero-image 주석을 풀고 파일 이름만 바꾸세요.
+       예) style="--hero-image:url('images/hero.jpg')"
+       넣지 않으면 청록→황토 듀오톤 배경이 그대로 쓰입니다. -->
+  <section class="hero"><!-- style="--hero-image:url('images/hero.jpg')" -->
+    <!-- 쉐키나 영광 — 광선 · 광채 · 영광의 구름 · 빛기둥 · 금빛 티끌
+         (이미지 파일 없이 SVG·CSS 로만 그립니다. 자세한 설명은 css/style.css) -->
+    <div class="shekinah" aria-hidden="true">
+      <div class="sk-rays"></div>
+
+      <svg class="sk-cloud" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="skCloudA" x="-25%" y="-25%" width="150%" height="150%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0042 0.0095" numOctaves="4" seed="11" result="n" />
+            <!-- 난류 무늬를 따뜻한 빛(1, .87, .63)으로 물들이고, 알파만 무늬대로 남긴다 -->
+            <feColorMatrix in="n" type="matrix"
+              values="0 0 0 0 1
+                      0 0 0 0 0.87
+                      0 0 0 0 0.63
+                      0.95 0.55 0 0 -0.34" />
+            <feGaussianBlur stdDeviation="5" />
+          </filter>
+          <radialGradient id="skFadeA" cx="50%" cy="40%" r="62%">
+            <stop offset="0%" stop-color="#fff" stop-opacity="1" />
+            <stop offset="52%" stop-color="#fff" stop-opacity=".5" />
+            <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+          </radialGradient>
+          <mask id="skMaskA"><rect width="600" height="400" fill="url(#skFadeA)" /></mask>
+        </defs>
+        <rect width="600" height="400" filter="url(#skCloudA)" mask="url(#skMaskA)" />
+      </svg>
+
+      <svg class="sk-cloud two" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="skCloudB" x="-25%" y="-25%" width="150%" height="150%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0026 0.0061" numOctaves="3" seed="29" result="n" />
+            <feColorMatrix in="n" type="matrix"
+              values="0 0 0 0 1
+                      0 0 0 0 0.94
+                      0 0 0 0 0.8
+                      0.8 0.45 0 0 -0.3" />
+            <feGaussianBlur stdDeviation="9" />
+          </filter>
+          <radialGradient id="skFadeB" cx="50%" cy="34%" r="58%">
+            <stop offset="0%" stop-color="#fff" stop-opacity="1" />
+            <stop offset="58%" stop-color="#fff" stop-opacity=".4" />
+            <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+          </radialGradient>
+          <mask id="skMaskB"><rect width="600" height="400" fill="url(#skFadeB)" /></mask>
+        </defs>
+        <rect width="600" height="400" filter="url(#skCloudB)" mask="url(#skMaskB)" />
+      </svg>
+
+      <div class="sk-pillar"></div>
+      <div class="sk-core"></div>
+      <div class="sk-motes"></div>
+    </div>
+
+    <div class="hero-inner">
+      <div class="hero-panel">
+        <p class="hero-series">마/태/복/음/강/해</p>
+        <h1>
+          나는 <span class="big">반석</span> 위에<span class="ref">마 7:24–27</span>
+          <span class="l2"><span class="big">집을 짓는</span> 사람</span>
+        </h1>
+      </div>
+      <p class="hero-en">I Build My House upon the Rock</p>
+
+      <div class="hero-actions">
+        <a class="hero-btn" href="word.html">이번 주 말씀</a>
+        <a class="hero-btn" href="about.html#directions">오시는 길</a>
+      </div>
+    </div>
+
+    <!-- 바로가기 카드 줄 -->
+    <div class="hero-strip">
+      <div class="container">
+        <a class="hs-card" href="news.html#contact"><span class="hs-title">새가족 등록</span><span class="hs-desc">처음 오셨나요</span></a>
+        <a class="hs-card" href="about.html#directions"><span class="hs-title">오시는 길</span><span class="hs-desc">약도 · 주차</span></a>
+        <a class="hs-card" href="about.html#worship"><span class="hs-title">예배 시간</span><span class="hs-desc">주일 · 수요 · 새벽</span></a>
+        <a class="hs-card" href="word.html#bulletin"><span class="hs-title">주보</span><span class="hs-desc">이번 주 주보</span></a>
+        <a class="hs-card" href="mypage.html"><span class="hs-title">나의 기록</span><span class="hs-desc">헌금 · 우리 가정</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 설교 ===== -->
+  <section class="wrapper bg-light block">
+    <div class="container">
+      <div class="sec-head">
+        <div>
+          <h2>설교</h2>
+          <p class="sec-desc">주일에 선포된 말씀을 다시 듣고, 한 주간 마음에 새깁니다.</p>
+        </div>
+        <a class="more" href="word.html#archive">자세히 보기</a>
+      </div>
+
+      <div class="feature">
+        <!-- 설교 영상: 유튜브 주소를 넣으면 바로 재생됩니다.
+             <iframe src="https://www.youtube.com/embed/영상ID" allowfullscreen></iframe> -->
+        <div class="feature-media">
+          <div class="placeholder">설교 영상을 등록하면<br />이 자리에 재생 화면이 나옵니다.</div>
+        </div>
+        <div class="feature-info">
+          <p class="cat">주일 낮 예배</p>
+          <h3>반석 위에 지은 집</h3>
+          <p class="en">A House Built on the Rock</p>
+          <p class="ref">마태복음 7:24–27 · 강명우 목사 · 2026.09.13</p>
+          <blockquote>비가 내리고 창수가 나고 바람이 불어 그 집에 부딪치되 무너지지 아니하나니 이는 주추를 반석 위에 놓은 까닭이요</blockquote>
+          <a class="btn btn-line" href="word.html">설교 다시 보기</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 찬양 · 지난 설교 ===== -->
+  <section class="wrapper bg-gray block">
+    <div class="container">
+      <div class="sec-head">
+        <div>
+          <h2>말씀 · 찬양</h2>
+          <p class="sec-desc">지난 주일과 수요 예배, 찬양대의 찬양입니다.</p>
+        </div>
+        <a class="more" href="word.html#archive">전체 보기</a>
+      </div>
+      <div class="cards">
+        <a class="card" href="word.html#archive">
+          <div class="card-thumb">설교 영상</div>
+          <div class="card-body">
+            <span class="card-tag">주일예배</span>
+            <h3>흔들리지 않는 믿음</h3>
+            <p class="en">Faith That Does Not Shake</p>
+            <p class="card-meta">강명우 목사 · 2026.09.06</p>
+          </div>
+        </a>
+        <a class="card" href="praise.html#choir">
+          <div class="card-thumb">찬양대</div>
+          <div class="card-body">
+            <span class="card-tag">찬양</span>
+            <h3>주의 인자하심이</h3>
+            <p class="en">Your Lovingkindness</p>
+            <p class="card-meta">찬양대 · 2026.09.13</p>
+          </div>
+        </a>
+        <a class="card" href="word.html#archive">
+          <div class="card-thumb">설교 영상</div>
+          <div class="card-body">
+            <span class="card-tag">수요기도회</span>
+            <h3>주의 말씀은 내 발에 등</h3>
+            <p class="en">Your Word Is a Lamp to My Feet</p>
+            <p class="card-meta">강명우 목사 · 2026.09.09</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 오늘의 말씀 ===== -->
+  <section class="verse-band">
+    <div class="container">
+      <span class="eyebrow2">TODAY'S WORD</span>
+      <h2>“여호와는 나의 반석이시요 나의 요새시요<br />나를 건지시는 이시요”</h2>
+      <p class="ref">시편 18:2</p>
+    </div>
+  </section>
+
+  <!-- ===== 공지사항 ===== -->
+  <section class="wrapper bg-light block">
+    <div class="container">
+      <div class="sec-head">
+        <div><h2>공지사항</h2></div>
+        <a class="more" href="news.html#notice">전체 보기</a>
+      </div>
+      <div class="list">
+        <a class="list-item" href="news.html#notice"><span class="li-tag">공지</span><span class="li-title">추수감사주일 준비 기도회 안내</span><span class="li-date">2026.09.21</span></a>
+        <a class="list-item" href="news.html#notice"><span class="li-tag">공지</span><span class="li-title">구역 예배 일정 안내</span><span class="li-date">2026.09.17</span></a>
+        <a class="list-item" href="news.html#album"><span class="li-tag">소식</span><span class="li-title">새가족 환영회를 열었습니다</span><span class="li-date">2026.09.14</span></a>
+        <a class="list-item" href="news.html#notice"><span class="li-tag">공지</span><span class="li-title">9월 헌금 봉투 배부 안내</span><span class="li-date">2026.09.07</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 예배 안내 · 오시는 길 · 교회 소식 ===== -->
+  <section class="wrapper bg-gray block">
+    <div class="container">
+      <div class="sec-head">
+        <div>
+          <h2>교회 안내</h2>
+          <p class="sec-desc">처음 오신 분이 5초 안에 예배 시간과 위치를 찾을 수 있도록 담았습니다.</p>
+        </div>
+        <a class="more" href="about.html">교회 소개</a>
+      </div>
+      <div class="info-grid">
+        <div class="info-box">
+          <h3>예배 안내</h3>
+          <table class="worship-table">
+            <tr><th>주일 낮 예배</th><td>오전 11:00</td></tr>
+            <tr><th>주일 오후 예배</th><td>오후 2:00</td></tr>
+            <tr><th>수요 기도회</th><td>오후 7:30</td></tr>
+            <tr><th>새벽 기도회</th><td>화~토 오전 5:30</td></tr>
+          </table>
+        </div>
+        <div class="info-box">
+          <h3>오시는 길</h3>
+          <ul>
+            <li>경기도 화성시 동탄 <em>(정확한 주소를 알려주시면 넣겠습니다)</em></li>
+            <li>교회 앞 주차장 이용 가능</li>
+            <li>처음 오신 분은 1층 안내석에서 도와드립니다</li>
+          </ul>
+          <p style="margin:18px 0 0"><a class="more" href="about.html#directions">약도 보기</a></p>
+        </div>
+        <div class="info-box">
+          <h3>교회 소식</h3>
+          <ul>
+            <li>9월 21일 · 추수감사주일 준비 기도회</li>
+            <li>9월 17일 · 구역 예배 안내</li>
+            <li>9월 14일 · 새가족 환영회</li>
+          </ul>
+          <p style="margin:18px 0 0"><a class="more" href="news.html">소식 더 보기</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/config.js?v=3"></script>
+  <script src="js/layout.js?v=3"></script>
+</body>
+</html>

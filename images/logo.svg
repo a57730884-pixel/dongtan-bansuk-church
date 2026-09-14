@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 1120" role="img" aria-label="동탄반석교회">
+  <title>동탄반석교회</title>
+  <!-- 열린 두 문(왼쪽 파랑 · 오른쪽 초록) 사이로 십자가가 드러나는 교회 로고.
+       · 십자가의 세로대는 두 문 사이의 빈 곳이 만들고, 가로대만 흰 막대로 그립니다.
+       · 모서리는 같은 색 선(stroke-linejoin:round)으로 둥글게 처리했습니다.
+       · 색을 바꾸려면 각 path 의 fill 과 stroke 를 같은 값으로 고치면 됩니다. -->
+  <g stroke-width="26" stroke-linejoin="round">
+    <!-- 왼쪽 문 -->
+    <path d="M14 14 L392 84 L330 880 L14 934 Z" fill="#3ab8f3" stroke="#3ab8f3" />
+    <!-- 오른쪽 문 -->
+    <path d="M508 150 L826 66 L826 1100 L446 1012 Z" fill="#8dce0a" stroke="#8dce0a" />
+  </g>
+  <!-- 십자가 가로대 -->
+  <rect x="176" y="358" width="488" height="80" fill="#fff" />
+</svg>
