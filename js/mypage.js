@@ -173,6 +173,37 @@ console.log('[mypage.js] v1');
     return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
   }
 
+  /* ── 회원 탈퇴 ──────────────────────────────────────────
+     되돌릴 수 없는 일이므로 두 번 묻는다. 두 번째는 직접 글자를 적게 한다.
+     실제 삭제는 데이터베이스의 withdraw_me() 가 한다(supabase/10_account.sql). */
+  function bindQuit() {
+    var btn = document.getElementById('quitBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      if (!window.confirm('회원에서 탈퇴하시겠습니까?\n\n로그인 계정과 홈페이지 기록(성경 읽기·동의 내역)이 지워지며 되돌릴 수 없습니다.\n교적과 헌금 기록은 교회 장부로 남습니다.')) return;
+      var typed = window.prompt('정말 탈퇴하시려면 아래 칸에 "탈퇴" 두 글자를 적어 주세요.');
+      if (String(typed || '').trim() !== '탈퇴') return;
+
+      btn.disabled = true; btn.textContent = '처리 중…';
+      window.__sb.rpc('withdraw_me').then(function (r) {
+        if (r.error) throw r.error;
+        if (r.data && r.data.ok === false) throw new Error(r.data.error || '탈퇴하지 못했습니다.');
+        try { sessionStorage.setItem('flashMsg', '탈퇴가 처리되었습니다. 그동안 함께해 주셔서 감사합니다.'); } catch (e) {}
+        try { window.__sb.auth.signOut(); } catch (e) {}
+        try {
+          for (var i = localStorage.length - 1; i >= 0; i--) {
+            var k = localStorage.key(i);
+            if (k && k.indexOf('sb-') === 0) localStorage.removeItem(k);
+          }
+        } catch (e) {}
+        setTimeout(function () { location.href = 'index.html'; }, 400);
+      }).catch(function (e) {
+        btn.disabled = false; btn.textContent = '회원 탈퇴';
+        window.alert('탈퇴하지 못했습니다.\n' + ((e && e.message) || '잠시 후 다시 시도해 주세요.'));
+      });
+    });
+  }
+
   function drawConsent(box, p) {
     function row(label, at, req) {
       var tag = req ? '<em style="font-style:normal;color:var(--accent-soft);font-weight:700">[필수]</em> '
@@ -180,8 +211,21 @@ console.log('[mypage.js] v1');
       var when = at ? fmtDay(at) + ' 동의' : '기록 없음';
       return '<li><span>' + tag + esc(label) + '</span><span class="cl-when">' + when + '</span></li>';
     }
+    // 가입할 때 이미 동의를 마치셨다면 접어 둔다.
+    // 다시 동의를 받는 화면이 아니라 지나간 기록이므로 늘 펼쳐 둘 이유가 없다.
+    // 다만 없애지는 않는다 — 선택 동의를 철회할 창구는 열어 두어야 한다
+    // (개인정보 보호법 제37조, 우리 방침 제8조).
+    var settled = !!(p.terms_agreed_at && p.privacy_agreed_at);
+    box.className = 'fin-card consent-fold' + (settled ? '' : ' open');
     box.innerHTML =
-      '<h3 class="sub-title">개인정보 동의 내역</h3>' +
+      '<button type="button" class="consent-fold-head" id="cfHead" aria-expanded="' + (!settled) + '">' +
+        '<span class="cf-title">개인정보 동의 내역</span>' +
+        '<span class="cf-state">' +
+          (settled ? fmtDay(p.privacy_agreed_at) + ' 동의 완료' : '확인이 필요합니다') +
+        '</span>' +
+        '<span class="cf-caret" aria-hidden="true">⌄</span>' +
+      '</button>' +
+      '<div class="consent-fold-body"' + (settled ? ' hidden' : '') + '>' +
       '<ul class="consent-log">' +
         row('홈페이지 이용약관', p.terms_agreed_at, true) +
         row('개인정보 수집·이용', p.privacy_agreed_at, true) +
@@ -194,7 +238,21 @@ console.log('[mypage.js] v1');
         '동의하지 않으셔도 가입과 이용에는 제한이 없습니다. 언제든 다시 바꾸실 수 있습니다.</p>' +
       (p.consent_version ? '<p style="margin:10px 0 0;font-size:.8rem;color:var(--ink-soft)">동의서 판 ' + esc(p.consent_version) + '</p>' : '') +
       '<p style="margin:14px 0 0;font-size:.85rem;color:var(--ink-soft)">' +
-        '<a href="privacy.html">개인정보처리방침</a> · <a href="terms.html">이용약관</a> · 탈퇴와 그 밖의 요청은 교회 사무실로 말씀해 주세요.</p>';
+        '<a href="privacy.html">개인정보처리방침</a> · <a href="terms.html">이용약관</a></p>' +
+      '<div class="quit-row"><button type="button" class="quit-btn" id="quitBtn">회원 탈퇴</button>' +
+        '<span class="quit-note">로그인 계정과 홈페이지 기록이 지워집니다. 교적과 헌금은 교회 장부로 남습니다.</span></div>' +
+      '</div>';
+
+    var head = document.getElementById('cfHead');
+    if (head) head.addEventListener('click', function () {
+      var body = box.querySelector('.consent-fold-body');
+      var open = body.hidden;
+      body.hidden = !open;
+      head.setAttribute('aria-expanded', String(open));
+      box.classList.toggle('open', open);
+    });
+
+    bindQuit();
 
     var cb = document.getElementById('newsOptIn');
     var note = document.getElementById('newsMsg');

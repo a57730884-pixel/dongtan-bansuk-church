@@ -95,6 +95,7 @@ python -m http.server 5173
 | `supabase/07_admin.sql` | **관리자 등록** — 이메일로 찾아 admins 에 넣고 현재 관리자 목록을 보여 준다 |
 | `supabase/08_content.sql` | **설교 · 첫 화면 제목** — 최고관리자만 고칠 수 있는 화면 내용 |
 | `supabase/09_reading.sql` | **성경 읽기** — 읽은 날 기록 · 목회 현황 집계 함수 |
+| `supabase/10_account.sql` | **계정 관리** — 본인 탈퇴 · 가입자 삭제/정지 · 임시 비밀번호 |
 
 성경 본문은 `data/urm/` 에 우리말성경 66권이 책별 JSON(5MB)으로 들어 있습니다.
 그날 읽을 책만 내려받으므로 성경 한 권을 통째로 받지 않습니다.
@@ -120,7 +121,7 @@ python -m http.server 5173
 3. `js/config.js` 의 `PROD` 칸에 두 값을 붙여 넣습니다. 같은 파일 맨 위의 교회 정보(주소·전화·대표자·계좌)도 채웁니다.
 
 **2단계 · 표 만들기**
-Supabase ▸ SQL Editor 에서 `supabase/01 → 02 → 03 → 04 → 05 → 06 → 08 → 09` 를 차례로 Run 합니다.
+Supabase ▸ SQL Editor 에서 `supabase/01 → 02 → 03 → 04 → 05 → 06 → 08 → 09 → 10` 을 차례로 Run 합니다.
 (07 은 관리자 등록용이라 3단계에서 따로 실행합니다.)
 
 **3단계 · 관리자 등록**

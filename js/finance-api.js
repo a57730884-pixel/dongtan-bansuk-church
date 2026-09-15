@@ -233,6 +233,13 @@ window.WPF = (function () {
           p_is_admin: (typeof params.isAdmin === 'boolean') ? params.isAdmin : null,
           p_can_finance: (typeof params.canFinance === 'boolean') ? params.canFinance : null
         });
+      // ── 계정 관리(최고관리자) — supabase/10_account.sql ──
+      case 'deleteUser':
+        return rpc('admin_delete_user', { p_uid: params.targetUid });
+      case 'banUser':
+        return rpc('admin_ban_user', { p_uid: params.targetUid, p_days: params.days || 0 });
+      case 'tempPassword':
+        return rpc('admin_temp_password', { p_uid: params.targetUid });
       case 'getSettings':
         return rest('GET', 'app_settings?select=key,value&limit=2000').then(function (rows) {
           var s = {}; (rows || []).forEach(function (r) { s[r.key] = r.value; }); return { ok: true, settings: s };

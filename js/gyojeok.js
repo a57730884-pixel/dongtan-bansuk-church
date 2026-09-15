@@ -63,14 +63,18 @@ console.log('[gyojeok.js] v20260817gjdel');
       var users = (res[0].users || []).sort(function (a, b) { return (b.isAdmin - a.isAdmin) || (b.canFinance - a.canFinance) || String(a.name).localeCompare(String(b.name), 'ko'); });
       var gj = tagRids((res[1].members || []).filter(function (m) { return m['이름']; }));
       panel.innerHTML = '<div class="fin-card"><p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px">홈페이지에 가입한 회원입니다. <b>회원</b> 칸에서 정/준회원을 바꿀 수 있고, <b>정회원</b>으로 바꾸면 교적과 연결됩니다(헌금조회·가정합산 연동). <b>최고관리자</b>는 교적관리와 재정관리를 모두 열 수 있고, <b>재정권한</b>만 드리면 그분의 머리말에 <b>재정관리</b> 메뉴 하나만 생깁니다. 체크를 풀면 곧바로 닫힙니다.</p>' +
-        '<div style="overflow:auto"><table class="fin-table"><thead><tr><th>이름</th><th>이메일</th><th>회원</th><th style="text-align:center">최고관리자</th><th style="text-align:center">재정권한</th></tr></thead><tbody>' +
+        '<div style="overflow:auto"><table class="fin-table"><thead><tr><th>이름</th><th>이메일</th><th>회원</th><th style="text-align:center">최고관리자</th><th style="text-align:center">재정권한</th><th style="text-align:center">계정</th></tr></thead><tbody>' +
         users.map(function (u) {
           return '<tr data-uid="' + esc(u.uid) + '"><td><b>' + esc(u.name || '(이름없음)') + '</b></td><td style="color:var(--ink-soft)">' + esc(u.email) + '</td>' +
             '<td><span class="st-pill" style="margin-right:8px;display:inline-block;min-width:48px">' + stPill(u.status) + '</span><select class="ck-status" style="padding:5px 8px;border:1px solid #cdd7e3;border-radius:7px;font:inherit;background:#fff">' +
               '<option value="준회원"' + (u.status === '정회원' ? '' : ' selected') + '>준회원</option>' +
               '<option value="정회원"' + (u.status === '정회원' ? ' selected' : '') + '>정회원</option></select></td>' +
             '<td style="text-align:center"><input type="checkbox" class="ck-admin" ' + (u.isAdmin ? 'checked' : '') + '></td>' +
-            '<td style="text-align:center"><input type="checkbox" class="ck-fin" ' + (u.canFinance ? 'checked' : '') + '></td></tr>';
+            '<td style="text-align:center"><input type="checkbox" class="ck-fin" ' + (u.canFinance ? 'checked' : '') + '></td>' +
+            '<td class="acct-cell">' + (u.banned ? '<span class="fin-pill out">정지됨</span> ' : '') +
+              '<button type="button" class="acct-btn" data-act="pw">임시 비밀번호</button>' +
+              '<button type="button" class="acct-btn" data-act="ban">' + (u.banned ? '정지 해제' : '정지') + '</button>' +
+              '<button type="button" class="acct-btn danger" data-act="del">삭제</button></td></tr>';
         }).join('') + '</tbody></table></div><p class="help" id="gj_msg" style="margin-top:10px"></p></div>';
       var msg = panel.querySelector('#gj_msg');
       function flash(ok, txt) { msg.style.color = ok ? 'green' : '#c0392b'; msg.textContent = txt; }
@@ -89,6 +93,57 @@ console.log('[gyojeok.js] v20260817gjdel');
         }
         ckA.addEventListener('change', function () { saveAccess('isAdmin', ckA.checked, function () { ckA.checked = !ckA.checked; }); });
         ckF.addEventListener('change', function () { saveAccess('canFinance', ckF.checked, function () { ckF.checked = !ckF.checked; }); });
+
+        /* ── 계정 관리 — 임시 비밀번호 · 정지 · 삭제 ──────────
+           되돌릴 수 없는 일(삭제)은 이름을 직접 적게 해 한 번 더 붙든다. */
+        Array.prototype.forEach.call(tr.querySelectorAll('.acct-btn'), function (ab) {
+          ab.addEventListener('click', function () {
+            var act = ab.getAttribute('data-act');
+            var who = (u.name || u.email || '이 계정');
+
+            if (act === 'pw') {
+              if (!window.confirm(who + ' 님의 비밀번호를 임시 비밀번호로 바꿉니다.\n지금 쓰시던 비밀번호는 더 이상 쓸 수 없게 됩니다. 진행할까요?')) return;
+              ab.disabled = true; flash(true, '발급 중…');
+              WPF.call('tempPassword', { targetUid: uid }).then(assertOk).then(function (r) {
+                flash(true, '✓ 발급되었습니다');
+                window.prompt(
+                  who + ' 님의 임시 비밀번호입니다. 이 자리에서만 보이니 지금 복사해 전해 주세요.\n' +
+                  '받으신 분께는 로그인 후 곧바로 바꾸시도록 안내해 주십시오.',
+                  r.password);
+              }).catch(function (e) { flash(false, '오류: ' + e.message); })
+                .then(function () { ab.disabled = false; });
+              return;
+            }
+
+            if (act === 'ban') {
+              var lifting = ab.textContent.indexOf('해제') >= 0;
+              var days = 0;
+              if (!lifting) {
+                var v = window.prompt(who + ' 님의 로그인을 며칠 동안 막을까요? (숫자로, 예: 30)', '30');
+                if (v === null) return;
+                days = parseInt(v, 10);
+                if (!(days > 0)) { flash(false, '1 이상의 숫자를 적어 주세요.'); return; }
+              }
+              ab.disabled = true; flash(true, '저장 중…');
+              WPF.call('banUser', { targetUid: uid, days: days }).then(assertOk).then(function () {
+                flash(true, lifting ? '✓ 정지를 풀었습니다' : '✓ ' + days + '일간 정지했습니다');
+                setTimeout(render, 600);
+              }).catch(function (e) { flash(false, '오류: ' + e.message); ab.disabled = false; });
+              return;
+            }
+
+            if (act === 'del') {
+              if (!window.confirm(who + ' 님의 가입 계정을 지웁니다.\n\n로그인 계정과 홈페이지 기록(성경 읽기·동의 내역)이 사라지며 되돌릴 수 없습니다.\n교적과 헌금은 교회 장부로 남습니다.')) return;
+              var t = window.prompt('지우시려면 아래 칸에 "삭제" 두 글자를 적어 주세요.');
+              if (String(t || '').trim() !== '삭제') return;
+              ab.disabled = true; flash(true, '지우는 중…');
+              WPF.call('deleteUser', { targetUid: uid }).then(assertOk).then(function () {
+                flash(true, '✓ 지웠습니다');
+                tr.remove();
+              }).catch(function (e) { flash(false, '오류: ' + e.message); ab.disabled = false; });
+            }
+          });
+        });
         function setMember(status, key, name) {
           msg.style.color = 'var(--ink-soft)'; msg.textContent = '저장 중…';
           WPF.call('adminSetMember', { uid: uid, status: status, memberKey: key, memberName: name }).then(assertOk).then(function () {
