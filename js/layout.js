@@ -317,13 +317,31 @@
       }
     } catch (e) {}
 
+    /* 최고관리자 뱃지 — admins 에 있는 계정에만 이름 옆에 붙는다.
+       화면 장식이 아니라 "지금 내가 교적·재정까지 열 수 있는 상태"라는
+       표시다. 남의 개인정보를 보는 자리에 들어와 있음을 잊지 않도록. */
+    function markAdmin() {
+      var nameEl = slot && slot.querySelector(".auth-name");
+      if (!nameEl || slot.querySelector(".auth-badge")) return;
+      var b = document.createElement("span");
+      b.className = "auth-badge";
+      b.textContent = "최고관리자";
+      b.title = "교적과 재정을 모두 열 수 있는 계정입니다";
+      nameEl.insertAdjacentElement("afterend", b);
+    }
+
     function revealMenus(uid) {
       if (!uid) return;
       var h = { apikey: window.SUPABASE_ANON_KEY };
       if (cachedToken) h.Authorization = "Bearer " + cachedToken;
       fetch(window.SUPABASE_URL + "/rest/v1/admins?uid=eq." + uid + "&select=uid", { headers: h })
         .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (rows) { if (rows && rows.length) { var el = document.getElementById("navAdmin"); if (el) el.hidden = false; } })
+        .then(function (rows) {
+          if (!rows || !rows.length) return;
+          var el = document.getElementById("navAdmin");
+          if (el) el.hidden = false;
+          markAdmin();
+        })
         .catch(function () {});
       fetch(window.SUPABASE_URL + "/rest/v1/member_links?user_id=eq." + uid + "&select=member_status", { headers: h })
         .then(function (r) { return r.ok ? r.json() : null; })
@@ -390,7 +408,7 @@
     sdk.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
     sdk.onload = function () {
       var a = document.createElement("script");
-      a.src = "js/auth.js?v=5";
+      a.src = "js/auth.js?v=6";
       document.body.appendChild(a);
     };
     document.head.appendChild(sdk);

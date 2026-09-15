@@ -101,20 +101,36 @@ body.menu-lock{overflow:hidden}
 .auth-btn:hover{border-color:var(--accent);color:var(--accent)}
 .auth-pending{cursor:default;color:var(--muted)}
 .auth-name{font-weight:700;color:var(--ink);font-size:.96rem}
+/* 최고관리자 뱃지 — 눈에는 띄되 이름보다 커지지는 않게 */
+.auth-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  border:1px solid rgba(15,123,181,.35);background:rgba(15,123,181,.09);color:var(--accent);
+  border-radius:999px;padding:3px 10px;font-size:.76rem;font-weight:700;letter-spacing:.01em;
+  white-space:nowrap;cursor:default;
+}
+.auth-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
 
 .nav-toggle{display:none;width:44px;height:44px;border:0;background:none;cursor:pointer;flex-direction:column;gap:5px;align-items:center;justify-content:center}
 .nav-toggle span{display:block;width:22px;height:2px;background:var(--nav);border-radius:2px}
 .nav-backdrop{display:none}
 
+/* 관리자로 로그인하면 대메뉴가 여섯 개가 된다. 좁아지는 순서대로 덜어 낸다:
+   먼저 뱃지를 접고, 그다음 메뉴 글자를 줄인다. 로그아웃 버튼이 화면 밖으로
+   밀려나지 않는 것이 먼저다. */
+@media (max-width:1180px){
+  .auth-badge{display:none}
+}
 @media (max-width:1100px){
-  .nav-item>a{padding:10px 13px;font-size:1.05rem}
-  .nav-inner{gap:14px}
+  .nav-item>a{padding:10px 11px;font-size:1.02rem}
+  .nav-inner{gap:12px}
+  .auth-name{font-size:.9rem}
 }
 @media (max-width:900px){
   :root{--header-h:64px}
   .nav-inner{gap:12px;padding:0 18px}
   .nav-toggle{display:flex;order:3}
   .auth-slot{margin-left:auto}
+  .auth-badge{display:none}
   .logo-kr{font-size:1.15rem}
   .nav-menu{
     display:none;position:fixed;top:var(--header-h);left:0;right:0;bottom:0;background:#fff;
