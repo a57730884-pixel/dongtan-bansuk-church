@@ -13,7 +13,9 @@ window.CHURCH = {
   name: "동탄반석교회",
   nameEn: "DONGTAN BANSUK CHURCH",
   pastor: "강명우",                       // 담임목사(기부금영수증 대표자)
-  address: "경기도 화성시 동탄",            // TODO: 정확한 주소로 교체
+  address: "경기 화성시 동탄구 동탄지성로 84",   // 도로명 주소
+  addressJibun: "동탄구 반송동 42-8",         // 지번 — 오래된 내비게이션용
+  map: { lat: 37.2072341, lng: 127.0656236 },  // 지도 마커 자리
   phone: "",                              // TODO: 대표 전화
   bizno: "",                              // 고유번호(기부금영수증용)
   account: { bank: "", no: "", holder: "동탄반석교회" }, // 온라인 헌금 계좌

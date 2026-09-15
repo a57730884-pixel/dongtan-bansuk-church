@@ -67,25 +67,38 @@
       <div class="info-grid">
         <div class="info-box">
           <h3>주소</h3>
-          <p style="color:var(--ink-soft)">경기도 화성시 동탄 <br /><em>(정확한 도로명 주소를 알려주시면 지도와 함께 넣겠습니다)</em></p>
+          <p class="addr-road">경기 화성시 동탄구 동탄지성로 84</p>
+          <p class="addr-jibun">지번 · 동탄구 반송동 42-8</p>
+          <button type="button" class="btn btn-line addr-copy" id="addrCopy">주소 복사</button>
         </div>
         <div class="info-box">
           <h3>자동차로 오실 때</h3>
           <ul>
-            <li>내비게이션에 “동탄반석교회”를 입력하세요</li>
+            <li>내비게이션에 <b>동탄지성로 84</b> 또는 <b>동탄반석교회</b>를 입력하세요</li>
             <li>교회 앞 주차장 이용 가능</li>
           </ul>
         </div>
         <div class="info-box">
           <h3>대중교통으로 오실 때</h3>
           <ul>
-            <li>버스 노선 안내 자리</li>
-            <li>가까운 정류장에서 도보 O분</li>
+            <li>반송동 일대 정류장에서 도보로 오실 수 있습니다</li>
+            <li><em>(가까운 정류장과 버스 번호를 알려주시면 넣겠습니다)</em></li>
           </ul>
         </div>
       </div>
-      <!-- 지도: 주소가 확정되면 카카오맵/구글지도 iframe 을 이 자리에 넣습니다. -->
-      <div class="card-thumb" style="margin-top:24px;border-radius:var(--radius);aspect-ratio:21/9;">지도가 들어갈 자리</div>
+
+      <!-- 지도 — 구글 지도. 키 없이 쓰는 embed 주소이며, 마커는 좌표로 정확히 찍습니다.
+           lazy 로 두어 이 자리까지 내려와야 불러옵니다(첫 화면이 느려지지 않도록). -->
+      <div class="map-embed">
+        <iframe
+          src="https://maps.google.com/maps?q=37.2072341,127.0656236(%EB%8F%99%ED%83%84%EB%B0%98%EC%84%9D%EA%B5%90%ED%9A%8C)&hl=ko&z=17&output=embed"
+          title="동탄반석교회 위치 — 경기 화성시 동탄구 동탄지성로 84"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      </div>
+      <div class="map-links">
+        <a class="btn btn-line" href="https://www.google.com/maps/dir/?api=1&destination=37.2072341%2C127.0656236" target="_blank" rel="noopener">구글 지도로 길찾기</a>
+        <a class="btn btn-line" href="https://www.google.com/maps/search/?api=1&query=37.2072341%2C127.0656236" target="_blank" rel="noopener">큰 지도로 보기</a>
+      </div>
     </div>
   </section>
 
@@ -109,5 +122,23 @@
 
   <script src="js/config.js?v=4"></script>
   <script src="js/layout.js?v=4"></script>
+  <script>
+    /* 주소 복사 — 연세 드신 성도가 카카오톡으로 주소를 보내실 때 쓰십니다. */
+    (function () {
+      var btn = document.getElementById("addrCopy");
+      if (!btn) return;
+      var addr = (window.CHURCH && window.CHURCH.address) || "";
+      btn.addEventListener("click", function () {
+        var done = function () {
+          var o = btn.textContent;
+          btn.textContent = "✓ 복사되었습니다";
+          setTimeout(function () { btn.textContent = o; }, 1800);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(addr).then(done, function () { window.prompt("주소를 복사하세요", addr); });
+        } else { window.prompt("주소를 복사하세요", addr); }
+      });
+    })();
+  </script>
 </body>
 </html>

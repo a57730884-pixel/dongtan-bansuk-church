@@ -470,6 +470,25 @@ body.menu-lock{overflow:hidden}
 /* hidden 속성은 어떤 display 규칙보다 우선한다 (모달 단계 전환) */
 [hidden]{display:none !important}
 
+/* ============ 오시는 길 — 주소와 지도 ============ */
+.addr-road{margin:0;font-size:1.06rem;font-weight:700;color:var(--ink);line-height:1.5}
+.addr-jibun{margin:6px 0 0;font-size:.88rem;color:var(--muted)}
+.addr-copy{margin-top:16px;padding:9px 18px;font-size:.88rem}
+
+/* 지도 — 화면 폭에 따라 납작해지지 않도록 비율을 두 단계로 둔다 */
+.map-embed{
+  margin-top:24px;border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;background:var(--gray);aspect-ratio:21/9;
+}
+.map-embed iframe{display:block;width:100%;height:100%;border:0}
+.map-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.map-links .btn{padding:11px 20px;font-size:.92rem}
+
+@media (max-width:860px){
+  .map-embed{aspect-ratio:4/3}
+  .map-links .btn{flex:1 1 44%;text-align:center}
+}
+
 /* ============ 회원가입 동의 화면 ============
    연세 드신 성도도 읽을 수 있도록 글자를 키우고, 체크박스를 크게 잡았습니다.
    필수는 붉은 글씨, 선택은 회색 글씨로 한눈에 구분됩니다. */
