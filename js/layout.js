@@ -65,6 +65,59 @@
 
   /* ===== 푸터 · 모달 · 하단바 ===== */
   var acct = CH.account || {};
+
+  /* ===== 가입 동의 항목 =====================================
+     개인정보 보호법 제15조(수집·이용)·제22조(동의를 받는 방법)에 따라
+      · 필수와 선택을 나누어 각각 동의를 받고
+      · 항목마다 "무엇을 · 왜 · 얼마나" 를 그 자리에서 보여 주며
+      · 동의를 거부할 수 있다는 사실과 그 결과를 함께 알린다.
+     여기 적힌 내용은 privacy.html 의 본문과 같아야 합니다.
+     ------------------------------------------------------- */
+  var CONSENT_VERSION = "2026-09-15";      // 방침 시행일 = 동의서 판 번호
+  window.CONSENT_VERSION = CONSENT_VERSION;
+
+  var CONSENTS = [
+    { key: "terms", required: true, label: "홈페이지 이용약관",
+      detail:
+        "<p>홈페이지를 함께 쓰기 위한 약속입니다. 회원 등급(준회원·정회원), 게시물, 탈퇴에 관한 내용을 담고 있습니다.</p>" +
+        '<p class="consent-link"><a href="terms.html" target="_blank" rel="noopener">이용약관 전문 보기 ↗</a></p>' },
+
+    { key: "privacy", required: true, label: "개인정보 수집·이용",
+      detail:
+        '<table class="consent-table">' +
+          "<tr><th>수집 항목</th><td>이름, 이메일, 비밀번호(암호로 바꾸어 저장)<br />정회원 연결을 신청하실 때 생년월일을 추가로 받습니다. <b>주민등록번호는 받지 않습니다.</b></td></tr>" +
+          "<tr><th>이용 목적</th><td>회원 확인과 로그인, 교적 연결과 회원 등급 관리, 본인·가정의 헌금 내역 조회, 교회 안내</td></tr>" +
+          "<tr><th>보유 기간</th><td>회원 탈퇴 시까지. 다만 헌금·기부금영수증 기록은 관계 법령이 정한 기간 동안 교회 장부로 보관합니다.</td></tr>" +
+        "</table>" +
+        '<p class="consent-note">동의를 거부하실 수 있으나, 필수 항목에 동의하지 않으시면 회원 가입이 어렵습니다.</p>' +
+        '<p class="consent-link"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침 전문 보기 ↗</a></p>' },
+
+    { key: "age14", required: true, label: "만 14세 이상입니다",
+      detail:
+        "<p>만 14세 미만 아동은 법정대리인의 동의가 있어야 가입할 수 있어, 홈페이지에서는 직접 가입을 받지 않습니다. 교회 사무실로 문의해 주세요.</p>" },
+
+    { key: "news", required: false, label: "교회 소식 받기",
+      detail:
+        '<table class="consent-table">' +
+          "<tr><th>수집 항목</th><td>이메일</td></tr>" +
+          "<tr><th>이용 목적</th><td>주보·공지·행사 등 교회 소식 안내</td></tr>" +
+          "<tr><th>보유 기간</th><td>수신을 거부하시거나 탈퇴하실 때까지</td></tr>" +
+        "</table>" +
+        '<p class="consent-note">동의하지 않으셔도 가입과 서비스 이용에 아무런 제한이 없습니다. 가입 뒤 <b>나의 기록</b> 화면에서 언제든 바꾸실 수 있습니다.</p>' }
+  ];
+  window.CONSENTS = CONSENTS;
+
+  var consentItems = CONSENTS.map(function (c) {
+    var tag = c.required ? '<em class="req">[필수]</em>' : '<em class="opt">[선택]</em>';
+    return '<li class="consent-item" data-key="' + c.key + '">' +
+        '<div class="consent-row">' +
+          '<label class="consent-label"><input type="checkbox" class="consent-cb" data-key="' + c.key + '"' + (c.required ? ' data-required="1"' : "") + ' />' +
+            "<span>" + tag + " " + esc(c.label) + "</span></label>" +
+          '<button type="button" class="consent-more" aria-expanded="false">보기</button>' +
+        "</div>" +
+        '<div class="consent-detail" hidden>' + c.detail + "</div>" +
+      "</li>";
+  }).join("");
   var footerHTML =
     '<footer class="footer">' +
       '<div class="container footer-inner">' +
@@ -98,23 +151,56 @@
     /* 맨 위로 */
     '<button class="to-top" id="toTop" aria-label="맨 위로">↑</button>' +
 
-    /* 로그인 · 회원가입 모달 */
+    /* 로그인 · 회원가입 모달 ------------------------------------
+       회원가입은 「개인정보 보호법」 제15·22조에 따라
+       ① 약관 동의 → ② 정보 입력 → ③ 가입 완료 의 세 단계로 나눕니다.
+       필수·선택 동의를 따로 받고, 각 항목의 수집 항목·목적·보유 기간을
+       그 자리에서 펼쳐 볼 수 있게 했습니다. */
     '<div class="modal" id="authModal" hidden>' +
       '<div class="modal-backdrop" data-close></div>' +
-      '<div class="modal-box modal-box-auth" role="dialog" aria-modal="true" aria-label="로그인">' +
+      '<div class="modal-box modal-box-auth" role="dialog" aria-modal="true" aria-labelledby="authTitle">' +
         '<button class="modal-close" data-close aria-label="닫기">&times;</button>' +
         '<div class="auth-head"><h3 id="authTitle">로그인</h3>' +
           '<p id="authSubtitle">' + esc(CH.name || "") + " 성도 공간입니다.</p></div>" +
+
+        /* 가입 진행 표시 */
+        '<ol class="auth-steps" id="authSteps" hidden>' +
+          '<li id="step1">약관 동의</li><li id="step2">정보 입력</li><li id="step3">가입 완료</li>' +
+        "</ol>" +
+
+        /* ① 약관 동의 */
+        '<div class="consent-pane" id="authConsent" hidden>' +
+          '<label class="consent-all"><input type="checkbox" id="consentAll" />' +
+            "<span>아래 내용에 <b>모두 동의</b>합니다</span></label>" +
+          '<p class="consent-all-note">선택 항목까지 한 번에 동의합니다. 항목별로 따로 고르셔도 됩니다.</p>' +
+          '<ul class="consent-list">' + consentItems + "</ul>" +
+          '<p class="auth-msg" id="consentMsg" hidden></p>' +
+          '<button type="button" class="btn btn-solid auth-submit" id="consentNext">동의하고 계속하기</button>' +
+          '<p class="auth-switch">이미 회원이신가요? <button type="button" id="consentToLogin">로그인하기</button></p>' +
+        "</div>" +
+
+        /* ② 로그인 · 정보 입력 */
         '<form id="authForm" class="auth-form">' +
-          '<div class="form-field" id="nameField" hidden><label>이름</label><input type="text" name="name" placeholder="홍길동" /></div>' +
-          '<div class="form-field"><label>이메일</label><input type="email" name="email" required placeholder="name@example.com" /></div>' +
-          '<div class="form-field"><label>비밀번호</label><input type="password" name="password" id="authPassword" required minlength="6" placeholder="비밀번호" /></div>' +
-          '<label class="auth-check" id="termsField" hidden><input type="checkbox" name="terms" /> <span><a href="terms.html" target="_blank" rel="noopener">이용약관</a>과 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>에 동의합니다 <em>(필수)</em></span></label>' +
+          '<div class="form-field" id="nameField" hidden><label>이름</label><input type="text" name="name" placeholder="홍길동" autocomplete="name" /></div>' +
+          '<div class="form-field"><label>이메일</label><input type="email" name="email" required placeholder="name@example.com" autocomplete="email" /></div>' +
+          '<div class="form-field"><label>비밀번호</label><input type="password" name="password" id="authPassword" required minlength="6" placeholder="비밀번호" autocomplete="current-password" /></div>' +
+          '<div class="form-field" id="password2Field" hidden><label>비밀번호 확인</label><input type="password" name="password2" id="authPassword2" placeholder="한 번 더 입력해 주세요" autocomplete="new-password" /></div>' +
+          '<label class="auth-check auth-peek"><input type="checkbox" id="authPeek" /> <span>비밀번호 보기</span></label>' +
+          '<p class="consent-recap" id="authRecap" hidden></p>' +
           '<p class="auth-msg" id="authMsg" hidden></p>' +
           '<button type="submit" class="btn btn-solid auth-submit" id="authSubmit">로그인</button>' +
+          '<button type="button" class="auth-back" id="authBack" hidden>← 동의 화면으로</button>' +
         "</form>" +
         '<p class="auth-forgot" id="authForgotWrap"><button type="button" id="authForgot">비밀번호를 잊으셨나요?</button></p>' +
-        '<p class="auth-switch">처음이신가요? <button type="button" id="authToggle">회원가입</button></p>' +
+        '<p class="auth-switch" id="authSwitchWrap">처음이신가요? <button type="button" id="authToggle">회원가입</button></p>' +
+
+        /* ③ 가입 완료 */
+        '<div class="auth-done" id="authDone" hidden>' +
+          '<div class="done-mark">✓</div>' +
+          '<h4>가입 신청이 접수되었습니다</h4>' +
+          '<p id="authDoneMsg">보내 드린 <b>가입 확인 메일</b>의 링크를 눌러 주시면 로그인할 수 있습니다.<br />메일이 보이지 않으면 스팸함도 확인해 주세요.</p>' +
+          '<button type="button" class="btn btn-solid auth-submit" id="authDoneClose">확인</button>' +
+        "</div>" +
       "</div>" +
     "</div>" +
 
@@ -207,7 +293,11 @@
     if (fm) { sessionStorage.removeItem("flashMsg"); showFlash(fm); }
   } catch (e) {}
 
-  function openAuth() { var m = document.getElementById("authModal"); if (m) { m.hidden = false; document.body.style.overflow = "hidden"; } }
+  function openAuth() {
+    if (window.__openAuthView) return window.__openAuthView("login");   // auth.js 가 붙은 뒤에는 로그인 화면부터
+    var m = document.getElementById("authModal");
+    if (m) { m.hidden = false; document.body.style.overflow = "hidden"; }
+  }
   window.__openAuth = openAuth;
 
   /* ===== 로그인 상태 반영 =====
@@ -282,7 +372,7 @@
     sdk.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
     sdk.onload = function () {
       var a = document.createElement("script");
-      a.src = "js/auth.js?v=1";
+      a.src = "js/auth.js?v=4";
       document.body.appendChild(a);
     };
     document.head.appendChild(sdk);

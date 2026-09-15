@@ -38,10 +38,15 @@ console.log('[mypage.js] v1');
       html += isMember ? '<div id="mpOffer" class="fin-card"><p class="qt-loading">헌금 내역을 불러오는 중…</p></div>' +
                          '<div id="mpFamily" class="fin-card"><p class="qt-loading">가정 정보를 불러오는 중…</p></div>'
                        : matchCard();
+      html += '<div id="mpConsent" class="fin-card"><p class="qt-loading">동의 내역을 불러오는 중…</p></div>';
       root.innerHTML = html;
       if (isMember) { loadOfferings(); loadFamily(); } else bindMatch();
+      loadConsent();
     }).catch(function (e) {
-      root.innerHTML = msgCard('불러오지 못했습니다', e.message || '잠시 후 다시 시도해 주세요.');
+      // 교적·헌금을 못 불러와도 동의 내역은 볼 수 있어야 한다
+      root.innerHTML = msgCard('불러오지 못했습니다', e.message || '잠시 후 다시 시도해 주세요.') +
+        '<div id="mpConsent" class="fin-card"><p class="qt-loading">동의 내역을 불러오는 중…</p></div>';
+      loadConsent();
     });
   }
 
@@ -128,4 +133,82 @@ console.log('[mypage.js] v1');
   }
 
   boot();
+  /* ── 개인정보 동의 내역 ──────────────────────────────────
+     가입할 때 무엇에 동의했는지 본인이 확인하고,
+     선택 동의(교회 소식)는 여기서 직접 철회할 수 있어야 합니다.
+     (개인정보 보호법 제37조 — 처리 정지·동의 철회 요구권) */
+  function loadConsent() {
+    var box = document.getElementById('mpConsent');
+    if (!box) return;
+    var sb = window.__sb;
+    if (!sb) { setTimeout(loadConsent, 400); return; }   // auth.js 가 아직 붙기 전
+
+    sb.auth.getUser().then(function (r) {
+      var uid = r && r.data && r.data.user && r.data.user.id;
+      if (!uid) throw new Error('로그인이 필요합니다.');
+      return sb.from('profiles')
+        .select('terms_agreed_at,privacy_agreed_at,age14_confirmed_at,news_opt_in,news_agreed_at,consent_version')
+        .eq('id', uid).maybeSingle();
+    }).then(function (res) {
+      if (res.error) throw res.error;
+      drawConsent(box, res.data || {});
+    }).catch(function (e) {
+      var m = (e && e.message) || '';
+      var hint = /column|does not exist|schema cache/i.test(m)
+        ? '동의 기록 표가 아직 만들어지지 않았습니다. (관리자: supabase/06_consents.sql 실행)'
+        : m || '잠시 후 다시 시도해 주세요.';
+      box.innerHTML = '<h3 class="sub-title">개인정보 동의 내역</h3>' +
+        '<p style="margin:0;color:var(--ink-soft)">' + esc(hint) + '</p>';
+    });
+  }
+
+  function fmtDay(s) {
+    if (!s) return '';
+    var d = new Date(s);
+    if (isNaN(d)) return '';
+    return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function drawConsent(box, p) {
+    function row(label, at, req) {
+      var tag = req ? '<em style="font-style:normal;color:var(--accent-soft);font-weight:700">[필수]</em> '
+                    : '<em style="font-style:normal;color:var(--ink-soft);font-weight:700">[선택]</em> ';
+      var when = at ? fmtDay(at) + ' 동의' : '기록 없음';
+      return '<li><span>' + tag + esc(label) + '</span><span class="cl-when">' + when + '</span></li>';
+    }
+    box.innerHTML =
+      '<h3 class="sub-title">개인정보 동의 내역</h3>' +
+      '<ul class="consent-log">' +
+        row('홈페이지 이용약관', p.terms_agreed_at, true) +
+        row('개인정보 수집·이용', p.privacy_agreed_at, true) +
+        row('만 14세 이상 확인', p.age14_confirmed_at, true) +
+        row('교회 소식 받기', p.news_opt_in ? (p.news_agreed_at || p.privacy_agreed_at) : null, false) +
+      '</ul>' +
+      '<label class="news-toggle"><input type="checkbox" id="newsOptIn"' + (p.news_opt_in ? ' checked' : '') + ' />' +
+        '<span>교회 소식(주보·공지·행사)을 이메일로 받겠습니다</span></label>' +
+      '<p id="newsMsg" style="margin:8px 0 0;font-size:.85rem;color:var(--ink-soft)">' +
+        '동의하지 않으셔도 가입과 이용에는 제한이 없습니다. 언제든 다시 바꾸실 수 있습니다.</p>' +
+      (p.consent_version ? '<p style="margin:10px 0 0;font-size:.8rem;color:var(--ink-soft)">동의서 판 ' + esc(p.consent_version) + '</p>' : '') +
+      '<p style="margin:14px 0 0;font-size:.85rem;color:var(--ink-soft)">' +
+        '<a href="privacy.html">개인정보처리방침</a> · <a href="terms.html">이용약관</a> · 탈퇴와 그 밖의 요청은 교회 사무실로 말씀해 주세요.</p>';
+
+    var cb = document.getElementById('newsOptIn');
+    var note = document.getElementById('newsMsg');
+    if (!cb) return;
+    cb.addEventListener('change', function () {
+      var want = cb.checked;
+      cb.disabled = true;
+      note.textContent = '저장하는 중…';
+      window.__sb.rpc('set_news_consent', { p_optin: want, p_version: window.CONSENT_VERSION || null })
+        .then(function (r) {
+          if (r.error) throw r.error;
+          note.textContent = want ? '교회 소식을 받기로 하셨습니다.' : '교회 소식 수신을 철회하셨습니다.';
+        })
+        .catch(function (e) {
+          cb.checked = !want;
+          note.textContent = '바꾸지 못했습니다: ' + ((e && e.message) || '잠시 후 다시 시도해 주세요.');
+        })
+        .then(function () { cb.disabled = false; });
+    });
+  }
 })();
