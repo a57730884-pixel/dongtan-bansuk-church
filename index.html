@@ -136,12 +136,8 @@
         <div><h2>공지사항</h2></div>
         <a class="more" href="news.html#notice">전체 보기</a>
       </div>
-      <div class="list">
-        <a class="list-item" href="news.html#notice"><span class="li-tag">공지</span><span class="li-title">추수감사주일 준비 기도회 안내</span><span class="li-date">2026.09.21</span></a>
-        <a class="list-item" href="news.html#notice"><span class="li-tag">공지</span><span class="li-title">구역 예배 일정 안내</span><span class="li-date">2026.09.17</span></a>
-        <a class="list-item" href="news.html#album"><span class="li-tag">소식</span><span class="li-title">새가족 환영회를 열었습니다</span><span class="li-date">2026.09.14</span></a>
-        <a class="list-item" href="news.html#notice"><span class="li-tag">공지</span><span class="li-title">9월 헌금 봉투 배부 안내</span><span class="li-date">2026.09.07</span></a>
-      </div>
+      <!-- 최근 공지 넷. 실제 목록은 news.html 과 같은 곳에서 옵니다(js/notices.js) -->
+      <div class="list" id="homeNotices"><p class="qt-loading">불러오는 중…</p></div>
     </div>
   </section>
 
@@ -190,5 +186,6 @@
   <script src="js/config.js?v=11"></script>
   <script src="js/layout.js?v=11"></script>
   <script src="js/content.js?v=11"></script>
+  <script src="js/notices.js?v=11"></script>
 </body>
 </html>

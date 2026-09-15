@@ -24,29 +24,27 @@
 
   <section class="block" id="notice">
     <div class="container">
-      <div class="sec-head"><div>
-        <h2>공지사항</h2>
-      </div></div>
-      <div class="list">
-        <div class="list-item"><span class="li-tag">공지</span><span class="li-title">추수감사주일 준비 기도회 안내</span><span class="li-date">2026.09.21</span></div>
-        <div class="list-item"><span class="li-tag">공지</span><span class="li-title">구역 예배 일정 안내</span><span class="li-date">2026.09.17</span></div>
-        <div class="list-item"><span class="li-tag">소식</span><span class="li-title">새가족 환영회를 열었습니다</span><span class="li-date">2026.09.14</span></div>
+      <div class="sec-head">
+        <div><h2>공지사항</h2></div>
+        <!-- 최고관리자로 로그인하면 여기에 공지 올리기 단추가 붙습니다(js/notices.js) -->
+        <div class="sec-actions" id="noticeActions"></div>
       </div>
-      <p class="help" style="text-align:center;margin-top:26px">※ 예시 목록입니다. 게시판이 연결되면 실제 공지로 바뀝니다.</p>
+      <div class="list" id="noticeList"><p class="qt-loading">불러오는 중…</p></div>
     </div>
   </section>
 
   <section class="block alt" id="album">
     <div class="container">
-      <div class="sec-head"><div>
-        <h2>앨범</h2>
-        <p>행사 사진을 올리면 이곳에 모입니다.</p>
-      </div></div>
-      <div class="cards">
-        <article class="card"><div class="card-thumb">사진</div><div class="card-body"><h3>맥추감사주일</h3><p class="card-meta">2026.07.05</p></div></article>
-        <article class="card"><div class="card-thumb">사진</div><div class="card-body"><h3>여름 성경학교</h3><p class="card-meta">2026.08.09</p></div></article>
-        <article class="card"><div class="card-thumb">사진</div><div class="card-body"><h3>가을 야외 예배</h3><p class="card-meta">2026.09.07</p></div></article>
+      <div class="sec-head">
+        <div>
+          <h2>앨범</h2>
+          <p>성도 누구나 사진을 올려 함께 봅니다. 사진을 누르면 크게 넘겨 보실 수 있습니다.</p>
+        </div>
+        <div class="sec-actions">
+          <button type="button" class="admin-btn primary" id="albumUpload">＋ 사진 올리기</button>
+        </div>
       </div>
+      <div class="al-grid" id="albumGrid"><p class="qt-loading" style="grid-column:1/-1">불러오는 중…</p></div>
     </div>
   </section>
 
@@ -66,5 +64,9 @@
 
   <script src="js/config.js?v=11"></script>
   <script src="js/layout.js?v=11"></script>
+  <script src="js/upload.js?v=11"></script>
+  <script src="js/content.js?v=11"></script>
+  <script src="js/notices.js?v=11"></script>
+  <script src="js/album.js?v=11"></script>
 </body>
 </html>

@@ -422,6 +422,10 @@
   }
 
   /* 다른 화면에서도 부를 수 있게 열어 둔다 */
+  // 편집 모달은 공지사항·앨범도 함께 씁니다(js/notices.js, js/album.js)
+  window.__openEditForm = openForm;
+  window.__closeEditForm = closeForm;
+
   window.CONTENT = {
     editSermon: function (s) { editSermon(s || null, refreshAll); },
     editHero: function () { editHero(function () { loadHero().then(paintHero); }); },
@@ -432,8 +436,10 @@
   /* ── 시작 ── */
   if (!SB || !AK) return;   // Supabase 설정 전에는 원래 화면을 그대로 둔다
 
-  loadHero().then(paintHero).catch(function () {});
-  refreshAll();
+  if (document.querySelector(".hero h1")) loadHero().then(paintHero).catch(function () {});
+  // 설교 자리가 있는 화면에서만 설교를 부른다(공지·앨범 화면은 편집 모달만 빌려 쓴다)
+  if (document.getElementById("featuredRoot") || document.getElementById("homeFeature") ||
+      document.getElementById("archiveRoot")) refreshAll();
 
   document.addEventListener("perm-ready", function (e) {
     var was = isAdmin;
