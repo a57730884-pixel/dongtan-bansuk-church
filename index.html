@@ -23,25 +23,15 @@
        예) style="--hero-image:url('images/hero.jpg')"
        넣지 않으면 청록→황토 듀오톤 배경이 그대로 쓰입니다. -->
   <section class="hero"><!-- style="--hero-image:url('images/hero.jpg')" -->
-    <!-- 쉐키나 — 머무시는 영광. 움직이지 않는 한 폭의 그림(색면 + 열린 빛의 문).
-         자세한 구성 설명은 css/style.css 의 히어로 항목에 적어 두었습니다. -->
-    <div class="glory" aria-hidden="true">
-      <div class="g-veil"></div>
-      <div class="g-door"></div>
-      <div class="g-core"></div>
-      <div class="g-horizon"></div>
-      <svg class="g-grain" viewBox="0 0 600 400" preserveAspectRatio="none">
-        <filter id="gGrain">
-          <!-- 고운 입자 한 겹. 화면이 매끈한 그라데이션이 아니라 인쇄된 종이처럼 보이게 한다 -->
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-        <rect width="600" height="400" filter="url(#gGrain)" />
-      </svg>
-    </div>
+    <!-- 펜으로 그린 한 장면: 앞서 걸으시는 예수님, 하늘에 펼쳐진 성경, 그 위에 머무는 영광.
+         그림은 images/hero-sketch.svg 한 장이고, tools/gen_hero_sketch.js 로 다시 만들 수 있습니다. -->
+    <picture>
+      <source media="(max-width:700px)" srcset="images/hero-sketch-tall.svg?v=2" />
+      <img class="hero-art" src="images/hero-sketch.svg?v=2" alt="" aria-hidden="true" />
+    </picture>
 
     <div class="hero-inner">
-      <p class="hero-hebrew" aria-hidden="true">שכינה</p>
+      <p class="hero-hebrew" aria-hidden="true"><span>שכינה</span><span aria-hidden="true">שכינה</span></p>
       <div class="hero-panel">
         <p class="hero-series">마/태/복/음/강/해</p>
         <h1>
