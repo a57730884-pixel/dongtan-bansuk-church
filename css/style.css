@@ -717,6 +717,18 @@ body.menu-lock{overflow:hidden}
 .rd-verses li::marker{color:var(--muted);font-size:.8em}
 .rd-err{color:#c0392b;margin:0}
 
+/* 구속사 파노라마 — 본문보다 먼저 읽는 해설 */
+.rd-pano{
+  background:var(--soft);border:1px solid #d7e4f7;border-radius:var(--radius);
+  padding:16px 18px;margin:0 0 20px;
+}
+.rp-badge{margin:0 0 8px;font-size:.78rem;font-weight:700;color:var(--accent);letter-spacing:.01em}
+.rp-theme{margin:0;font-size:.92rem;line-height:1.8;color:var(--body)}
+.rp-day{
+  margin:10px 0 0;padding-top:10px;border-top:1px dashed rgba(15,123,181,.28);
+  font-size:.94rem;line-height:1.8;color:var(--ink);
+}
+
 /* 음성으로 듣기 */
 .rd-listen{white-space:nowrap}
 .rd-player{

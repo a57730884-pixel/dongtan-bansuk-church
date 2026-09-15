@@ -22,15 +22,20 @@ console.log('[care.js] v1');
       esc(t) + '</h3><p style="color:var(--ink-soft);margin:0">' + esc(x) + '</p></div>';
   }
 
-  function seoulYear() {
-    return +new Date().toLocaleString('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric' }).slice(0, 4);
-  }
+  // 읽기표의 첫날은 교회가 시작한 날(js/config.js 의 BIBLE_PLAN_START).
+  // 성도 화면(js/reading.js)과 같은 자를 써야 "며칠째" 가 어긋나지 않는다.
+  var START = (function () {
+    var v = String(window.BIBLE_PLAN_START || '').slice(0, 10).split('-');
+    if (v.length === 3) return { y: +v[0], m: +v[1], d: +v[2] };
+    var t = new Date().toLocaleString('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).split('-');
+    return { y: +t[0], m: +t[1], d: +t[2] };
+  })();
   function todayDay() {
     var s = new Date().toLocaleString('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).split('-');
-    var n = Math.floor((Date.UTC(+s[0], +s[1] - 1, +s[2]) - Date.UTC(+s[0], 0, 1)) / 86400000) + 1;
+    var n = Math.floor((Date.UTC(+s[0], +s[1] - 1, +s[2]) - Date.UTC(START.y, START.m - 1, START.d)) / 86400000) + 1;
     return Math.min(365, Math.max(1, n));
   }
-  var YEAR = seoulYear(), TODAY = todayDay();
+  var YEAR = START.y, TODAY = todayDay();
 
   function rpc(fn, params) {
     var h = { apikey: window.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' };
@@ -103,7 +108,7 @@ console.log('[care.js] v1');
       '<div class="fin-card">' +
         '<div class="care-head">' +
           '<h3 class="sub-title" style="margin:0">성도별 진행률</h3>' +
-          '<span class="help">' + YEAR + ' · 구속사적 성경읽기 365</span>' +
+          '<span class="help">구속사적 성경읽기 365</span>' +
         '</div>' +
         (members.length ? memberBars(members)
           : '<p class="help">아직 성경 읽기를 시작한 성도가 없습니다.</p>') +

@@ -25,14 +25,22 @@
     var p = s.split("-");
     return { y: +p[0], m: +p[1], d: +p[2] };
   }
+  /* 읽기표의 첫날은 교회가 이 읽기를 시작한 날입니다(js/config.js 의 BIBLE_PLAN_START).
+     달력의 1월 1일이 아닙니다 — 9월에 시작한 교회가 258일째부터 읽을 수는 없으니까요.
+     온 교회가 같은 날 같은 본문을 읽도록, 이 날짜 하나를 함께 씁니다. */
+  var START = (function () {
+    var s = String(window.BIBLE_PLAN_START || "").slice(0, 10).split("-");
+    if (s.length === 3) return { y: +s[0], m: +s[1], d: +s[2] };
+    var t = seoulNow();
+    return { y: t.y, m: t.m, d: t.d };     // 지정하지 않았으면 오늘이 첫날
+  })();
   function todayDay() {
     var t = seoulNow();
-    var start = Date.UTC(t.y, 0, 1);
-    var now = Date.UTC(t.y, t.m - 1, t.d);
-    var n = Math.floor((now - start) / 86400000) + 1;
-    return Math.min(365, Math.max(1, n));   // 윤년의 366일째는 365일째로 본다
+    var n = Math.floor((Date.UTC(t.y, t.m - 1, t.d) - Date.UTC(START.y, START.m - 1, START.d)) / 86400000) + 1;
+    return Math.min(365, Math.max(1, n));
   }
-  var YEAR = seoulNow().y;
+  // 기록을 묶는 이름 — 읽기표를 시작한 해. 해가 바뀌어도 한 바퀴는 이어진다
+  var YEAR = START.y;
 
   /* ── 본문 내려받기 (책 단위, 한 번 받으면 기억해 둔다) ── */
   var cache = {};
@@ -305,6 +313,14 @@
     return m;
   })();
 
+  // 그 책에서 아직 읽지 않은 첫 장이 읽기표 며칠째인가 (다 읽었으면 그 책의 첫날)
+  function firstDayOf(abbr) {
+    var b = bookProgress().filter(function (x) { return x.a === abbr; })[0];
+    if (!b) return 0;
+    var want = b.rest.length ? b.rest[0] : 1;
+    return dayOfChapter[abbr + "|" + want] || dayOfChapter[abbr + "|1"] || 0;
+  }
+
   // 읽은 날들로부터 책별로 읽은 장을 센다
   function bookProgress() {
     var read = {};   // 약어 → { 장번호: true }
@@ -405,14 +421,18 @@
         .catch(function (e) { show(e.message, false); btn.disabled = false; });
     };
 
-    // 권별 진도표 — 책을 누르면 아래에 남은 장이 펼쳐진다
+    /* 권별 진도표 — 책을 누르면 위 본문 칸도 그 책으로 함께 옮긴다.
+       창세기를 눌렀는데 아모스가 떠 있으면 누구라도 어리둥절하다. */
     Array.prototype.forEach.call(root.querySelectorAll(".bk"), function (b) {
       b.onclick = function () {
         var a = b.getAttribute("data-a");
-        state.book = (state.book === a) ? null : a;
+        if (state.book === a) { state.book = null; render(root); return; }
+        state.book = a;
+        var d = firstDayOf(a);
+        if (d) { stopAudio(); state.day = d; state.open = false; }
         render(root);
-        var d = root.querySelector(".bk-detail");
-        if (d) d.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        var t = root.querySelector(".rd-day");
+        if (t) t.scrollIntoView({ block: "center", behavior: "smooth" });
       };
     });
     var bkClose = root.querySelector("#bkClose");
@@ -427,12 +447,28 @@
     };
   }
 
+  /* 구속사 파노라마 — 오늘 본문이 성경 전체 이야기의 어디쯤인지,
+     어떤 눈으로 읽을 것인지. 구속사적 읽기표이므로 본문보다 먼저 온다. */
+  function panoramaHTML(day) {
+    var N = window.BIBLE_NOTES;
+    if (!N) return "";
+    var t = (N.themes || [])[day.t] || "";
+    var d = (N.days || [])[day.d - 1] || "";
+    if (!t && !d) return "";
+    return '<div class="rd-pano">' +
+      '<p class="rp-badge">구속사 파노라마 · 주제 ' + (day.t + 1) + "/38</p>" +
+      (t ? '<p class="rp-theme">' + esc(t) + "</p>" : "") +
+      (d ? '<p class="rp-day">' + esc(d) + "</p>" : "") +
+      "</div>";
+  }
+
   function fillText(root) {
     var box = root.querySelector("#rdText");
-    box.innerHTML = '<p class="qt-loading">본문을 불러오는 중…</p>';
-    passageHTML(PLAN.days[state.day - 1])
-      .then(function (html) { box.innerHTML = html; })
-      .catch(function (e) { box.innerHTML = '<p class="rd-err">' + esc(e.message) + "</p>"; });
+    var day = PLAN.days[state.day - 1];
+    box.innerHTML = panoramaHTML(day) + '<p class="qt-loading">본문을 불러오는 중…</p>';
+    passageHTML(day)
+      .then(function (html) { box.innerHTML = panoramaHTML(day) + html; })
+      .catch(function (e) { box.innerHTML = panoramaHTML(day) + '<p class="rd-err">' + esc(e.message) + "</p>"; });
   }
 
   /* ── 시작 ── */
