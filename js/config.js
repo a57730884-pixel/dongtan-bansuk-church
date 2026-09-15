@@ -45,8 +45,7 @@ window.CHURCH = {
   };
   var PROD = {
     url: "https://qqmhongiwvgworzdxkwo.supabase.co",
-    anon: ""   // TODO: Supabase ▸ Project Settings ▸ API Keys 의 publishable 키(sb_publishable_...)를 붙여 넣으세요.
-               //       이 값이 비어 있으면 로그인 버튼이 "준비 중"으로만 표시됩니다.
+    anon: "sb_publishable_kUnAO3fMqA85wnM-5ARj5Q_0XSwrohj"   // publishable(공개) 키 — 공개돼도 안전합니다.
   };
 
   var cfg = env === "development" ? LOCAL : PROD;
