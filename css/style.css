@@ -717,6 +717,24 @@ body.menu-lock{overflow:hidden}
 .rd-verses li::marker{color:var(--muted);font-size:.8em}
 .rd-err{color:#c0392b;margin:0}
 
+/* 음성으로 듣기 */
+.rd-listen{white-space:nowrap}
+.rd-player{
+  margin-top:14px;background:var(--gray);border:1px solid var(--line);
+  border-radius:var(--radius);padding:14px 16px;
+}
+.rp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.rp-now{font-size:.98rem;font-weight:500;color:var(--ink)}
+.rp-now em{font-style:normal;color:var(--muted);font-size:.82rem;margin-left:8px}
+.rp-move{
+  flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+  background:#fff;color:var(--nav);font-size:1.2rem;line-height:1;cursor:pointer;
+}
+.rp-move:hover{border-color:var(--accent);color:var(--accent)}
+.rp-audio{width:100%;height:40px;display:block}
+.rp-note{margin:10px 0 0;font-size:.84rem;color:var(--muted)}
+.rp-speaking{margin:0;font-size:.92rem;color:var(--accent)}
+
 /* 66권 진도표 — 어느 책을 얼마나 읽었는지 한눈에 */
 .bk-wrap{margin-top:24px;border-top:1px solid var(--line);padding-top:20px}
 .bk-title{margin:0 0 14px;font-size:.95rem;font-weight:700;color:var(--ink)}

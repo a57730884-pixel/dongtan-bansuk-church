@@ -457,7 +457,7 @@
     sdk.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
     sdk.onload = function () {
       var a = document.createElement("script");
-      a.src = "js/auth.js?v=11";
+      a.src = "js/auth.js?v=12";
       document.body.appendChild(a);
     };
     document.head.appendChild(sdk);

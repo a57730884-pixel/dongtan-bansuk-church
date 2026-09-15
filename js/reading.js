@@ -84,8 +84,138 @@
     }, function () { throw new Error("서버에 연결하지 못했습니다."); });
   }
 
+  /* ── 음성으로 듣기 ─────────────────────────────────────
+     교회가 마련해 둔 낭독 음원을 장 단위로 이어 재생합니다
+     (bible-<책번호>-<장>.mp3). 음원이 없거나 열리지 않는 장은
+     브라우저에 들어 있는 음성으로 대신 읽어 줍니다 — 그 편이
+     "소리가 안 나요" 하고 멈추는 것보다 낫습니다. */
+  var AUDIO_BASE = (window.BIBLE_AUDIO_BASE || "").replace(/\/?$/, "/");
+  var bookNo = {};
+  (window.BIBLE_BOOKS || []).forEach(function (b, i) { bookNo[b.a] = i + 1; });
+
+  // 그날 읽을 장을 차례로 늘어놓는다
+  function chaptersOf(day) {
+    var out = [];
+    (day.refs || []).forEach(function (r) {
+      for (var c = r[1]; c <= r[2]; c++) {
+        out.push({ a: r[0], name: PLAN.names[r[0]] || r[0], ch: c, no: bookNo[r[0]] || 0 });
+      }
+    });
+    return out;
+  }
+
+  var audio = null, aList = [], aIdx = 0, aRoot = null;
+
+  function stopAudio() {
+    if (audio) { try { audio.pause(); } catch (e) {} audio = null; }
+    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    state.audio = false;
+  }
+
+  function startAudio(root) {
+    aRoot = root;
+    aList = chaptersOf(PLAN.days[state.day - 1]);
+    aIdx = 0;
+    state.audio = true;
+    render(root);
+    playChapter();
+  }
+
+  function playerBox() { return aRoot && aRoot.querySelector("#rdPlayer"); }
+
+  function drawPlayer(note) {
+    var box = playerBox();
+    if (!box) return;
+    var c = aList[aIdx];
+    box.innerHTML =
+      '<div class="rp-head">' +
+        '<button type="button" class="rp-move" id="rpPrev" aria-label="앞 장">‹</button>' +
+        '<span class="rp-now">' + (c ? esc(c.name) + " " + c.ch + "장" : "") +
+          '<em>' + (aIdx + 1) + " / " + aList.length + "</em></span>" +
+        '<button type="button" class="rp-move" id="rpNext" aria-label="다음 장">›</button>' +
+      "</div>" +
+      '<div id="rpSlot"></div>' +
+      (note ? '<p class="rp-note">' + esc(note) + "</p>" : "");
+    var p = box.querySelector("#rpPrev"), n = box.querySelector("#rpNext");
+    if (p) p.onclick = function () { if (aIdx > 0) { aIdx--; playChapter(); } };
+    if (n) n.onclick = function () { if (aIdx < aList.length - 1) { aIdx++; playChapter(); } };
+  }
+
+  function playChapter() {
+    var c = aList[aIdx];
+    if (!c) { stopAudio(); render(aRoot); return; }
+    drawPlayer();
+    var slot = playerBox() && playerBox().querySelector("#rpSlot");
+    if (!slot) return;
+
+    if (!AUDIO_BASE || !c.no) { speakChapter(c); return; }
+
+    var el = document.createElement("audio");
+    el.controls = true; el.autoplay = true; el.preload = "auto"; el.className = "rp-audio";
+    el.src = AUDIO_BASE + "bible-" + c.no + "-" + c.ch + ".mp3";
+    el.addEventListener("ended", function () {
+      if (aIdx < aList.length - 1) { aIdx++; playChapter(); }
+      else { drawPlayer("오늘 본문을 다 들으셨습니다."); }
+    });
+    // 음원이 없거나 막히면 브라우저 음성으로 갈아탄다
+    el.addEventListener("error", function () { speakChapter(c, true); });
+    slot.innerHTML = "";
+    slot.appendChild(el);
+    audio = el;
+    var pr = el.play();
+    if (pr && pr.catch) pr.catch(function () { drawPlayer("재생 단추를 눌러 주세요."); });
+  }
+
+  /* 브라우저에 들어 있는 음성 — 절 단위로 끊어 읽어 호흡이 자연스럽다 */
+  function bestVoice() {
+    var vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
+    var ko = vs.filter(function (v) { return /^ko/i.test(v.lang || ""); });
+    ko.sort(function (a, b) {
+      function score(v) {
+        var n = (v.name || "").toLowerCase();
+        if (/google/.test(n)) return 4;
+        if (/natural|neural|premium|enhanced|heami|yuna|sora/.test(n)) return 3;
+        if (!v.localService) return 2;
+        return 1;
+      }
+      return score(b) - score(a);
+    });
+    return ko[0] || null;
+  }
+
+  function speakChapter(c, fellBack) {
+    var slot = playerBox() && playerBox().querySelector("#rpSlot");
+    if (!window.speechSynthesis) {
+      drawPlayer("이 기기에서는 음성으로 읽어 드릴 수 없습니다.");
+      return;
+    }
+    drawPlayer(fellBack ? "낭독 음원이 없어 기기 음성으로 읽어 드립니다." : "기기 음성으로 읽어 드립니다.");
+    slot = playerBox().querySelector("#rpSlot");
+    slot.innerHTML = '<p class="rp-speaking">읽는 중…</p>';
+
+    loadBook(c.a).then(function (chapters) {
+      var verses = (chapters[c.ch - 1] || []).slice();
+      if (!verses.length) { drawPlayer("본문을 찾지 못했습니다."); return; }
+      var v = bestVoice(), i = 0;
+      try { speechSynthesis.cancel(); } catch (e) {}
+      (function next() {
+        if (!state.audio || i >= verses.length) {
+          if (state.audio && aIdx < aList.length - 1) { aIdx++; playChapter(); }
+          else if (state.audio) drawPlayer("오늘 본문을 다 들으셨습니다.");
+          return;
+        }
+        var u = new SpeechSynthesisUtterance(verses[i]);
+        if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "ko-KR";
+        u.rate = 0.95;
+        u.onend = function () { i++; next(); };
+        u.onerror = function () { i++; next(); };
+        try { speechSynthesis.speak(u); } catch (e) { drawPlayer("음성을 낼 수 없습니다."); }
+      })();
+    }).catch(function () { drawPlayer("본문을 불러오지 못했습니다."); });
+  }
+
   /* ── 화면 ── */
-  var state = { day: todayDay(), done: [], open: false, member: false, book: null };
+  var state = { day: todayDay(), done: [], open: false, member: false, book: null, audio: false };
 
   function isDone(d) { return state.done.indexOf(d) >= 0; }
   function pct() { return Math.round(state.done.length / 365 * 1000) / 10; }
@@ -104,7 +234,7 @@
       '<div class="fin-card rd-card">' +
         '<div class="rd-head">' +
           '<h3 class="sub-title" style="margin:0">성경 읽기</h3>' +
-          '<span class="rd-year">' + YEAR + ' · 구속사적 성경읽기 365</span>' +
+          '<span class="rd-year">구속사적 성경읽기 365</span>' +
         "</div>" +
 
         /* 진행률 */
@@ -131,12 +261,15 @@
 
         '<div class="rd-actions">' +
           '<button type="button" class="btn btn-line" id="rdOpen">' + (state.open ? "본문 접기" : "본문 읽기") + "</button>" +
+          '<button type="button" class="btn btn-line rd-listen" id="rdListen">' +
+            (state.audio ? "🔊 듣기 그만" : "🔊 음성으로 듣기") + "</button>" +
           (state.member
             ? '<button type="button" class="btn ' + (isDone(state.day) ? "btn-line rd-undo" : "btn-solid") + '" id="rdCheck">' +
                 (isDone(state.day) ? "✓ 읽었습니다 (취소)" : "읽었습니다") + "</button>"
             : '<span class="rd-lock">정회원으로 인증하시면 읽은 날을 기록할 수 있습니다</span>') +
         "</div>" +
         '<p class="auth-msg" id="rdMsg" hidden></p>' +
+        '<div class="rd-player" id="rdPlayer"' + (state.audio ? "" : " hidden") + "></div>" +
         '<div class="rd-text" id="rdText"' + (state.open ? "" : " hidden") + "></div>" +
 
         /* 66권 — 어느 책을 얼마나 읽었는지 한눈에 */
@@ -250,11 +383,15 @@
     var msg = $("rdMsg");
     function show(t, ok) { msg.hidden = false; msg.textContent = t; msg.className = "auth-msg " + (ok ? "ok" : "err"); }
 
-    $("rdPrev").onclick = function () { if (state.day > 1) { state.day--; render(root); } };
-    $("rdNext").onclick = function () { if (state.day < 365) { state.day++; render(root); } };
-    if ($("rdToday")) $("rdToday").onclick = function () { state.day = todayDay(); render(root); };
+    $("rdPrev").onclick = function () { if (state.day > 1) { stopAudio(); state.day--; render(root); } };
+    $("rdNext").onclick = function () { if (state.day < 365) { stopAudio(); state.day++; render(root); } };
+    if ($("rdToday")) $("rdToday").onclick = function () { stopAudio(); state.day = todayDay(); render(root); };
 
     $("rdOpen").onclick = function () { state.open = !state.open; render(root); };
+    $("rdListen").onclick = function () {
+      if (state.audio) { stopAudio(); render(root); }
+      else startAudio(root);
+    };
 
     if ($("rdCheck")) $("rdCheck").onclick = function () {
       var btn = this, want = !isDone(state.day), d = state.day;

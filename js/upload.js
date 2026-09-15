@@ -67,12 +67,49 @@ window.ChurchUpload = (function () {
     return (folder || "uploads") + "/" + ym + "/" + d.getTime() + "-" + rnd + "." + ext;
   }
 
+  /* Cloudflare R2 워커로 올리기 — window.R2_UPLOAD_URL 이 있을 때만.
+     운평장로교회가 쓰는 워커와 같은 약속(POST /upload, DELETE /f/<key>)입니다.
+     워커가 이 홈페이지의 Supabase 토큰을 받아 주도록 설정돼 있어야 합니다.
+     실패하면 Supabase Storage 로 돌아갑니다 — 사진을 잃지 않도록. */
+  function r2Base() { return String(window.R2_UPLOAD_URL || "").replace(/\/$/, ""); }
+  function r2Upload(f, folder) {
+    return fetch(r2Base() + "/upload", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token(),
+        "Content-Type": f.type || "application/octet-stream",
+        "x-filename": encodeURIComponent(f.name || "file"),
+        "x-folder": folder || "uploads"
+      },
+      body: f
+    }).then(function (res) {
+      return res.text().then(function (t) {
+        var d = {}; try { d = t ? JSON.parse(t) : {}; } catch (e) {}
+        if (!res.ok) throw new Error(d.error || ("R2 업로드 실패 (" + res.status + ")"));
+        return d;   // { url, key }
+      });
+    });
+  }
+
   function upload(file, opts) {
     opts = opts || {};
     if (!isReady()) return Promise.reject(new Error("저장소가 아직 설정되지 않았습니다(js/config.js)."));
     if (!token()) return Promise.reject(new Error("로그인이 필요합니다."));
     var pre = (opts.compress === false) ? Promise.resolve(file) : compressImage(file);
-    return pre.then(function (f) {
+
+    if (r2Base()) {
+      return pre.then(function (f) {
+        return r2Upload(f, opts.folder).catch(function (e) {
+          console.warn("[upload] R2 실패 — Supabase Storage 로 올립니다:", e.message);
+          return supabaseUpload(f, opts);
+        });
+      });
+    }
+    return pre.then(function (f) { return supabaseUpload(f, opts); });
+  }
+
+  function supabaseUpload(f, opts) {
+    return Promise.resolve(f).then(function (f) {
       var key = makeKey(opts.folder, f.name);
       return fetch(base() + "/storage/v1/object/" + bucket() + "/" + key, {
         method: "POST",
@@ -95,6 +132,12 @@ window.ChurchUpload = (function () {
 
   function remove(key) {
     if (!isReady() || !key) return Promise.resolve(false);
+    if (r2Base()) {
+      return fetch(r2Base() + "/f/" + String(key).split("/").map(encodeURIComponent).join("/"), {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token() }
+      }).then(function (r) { return r.ok; }).catch(function () { return false; });
+    }
     return fetch(base() + "/storage/v1/object/" + bucket() + "/" + key, {
       method: "DELETE",
       headers: { Authorization: "Bearer " + token(), apikey: window.SUPABASE_ANON_KEY }
