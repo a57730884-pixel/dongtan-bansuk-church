@@ -91,6 +91,7 @@ python -m http.server 5173
 | `supabase/04_rpc.sql` | 교적 인증 · 내 상태 · 우리 가정 · 권한 부여 함수 |
 | `supabase/05_storage.sql` | 사진·PDF 저장소 |
 | `supabase/06_consents.sql` | **가입 동의 기록** — 동의 시각 · 덧붙이기 전용 동의 장부 · 선택 동의 철회 함수 |
+| `supabase/07_admin.sql` | **관리자 등록** — 이메일로 찾아 admins 에 넣고 현재 관리자 목록을 보여 준다 |
 
 ### 도구
 | 파일 | 내용 |
@@ -112,14 +113,15 @@ python -m http.server 5173
 **2단계 · 표 만들기**
 Supabase ▸ SQL Editor 에서 `supabase/01 → 02 → 03 → 04 → 05 → 06` 을 차례로 Run 합니다.
 
-**3단계 · 담임목사 계정을 관리자로**
-1. 홈페이지에서 담임목사님 계정으로 한 번 가입·로그인합니다.
-2. Supabase ▸ Authentication ▸ Users 에서 그 계정의 **User UID** 를 복사합니다.
-3. SQL Editor 에서 한 줄 실행:
-   ```sql
-   insert into public.admins (uid) values ('복사한-UID') on conflict do nothing;
-   ```
-4. 새로고침하면 상단에 **교회 행정** 메뉴가 나타납니다.
+**3단계 · 관리자 등록**
+1. 관리자가 되실 분이 홈페이지에서 회원가입하고, **가입 확인 메일의 링크까지 누릅니다.**
+   (링크를 누르기 전에는 계정이 만들어지지 않습니다.)
+2. SQL Editor 에서 `supabase/07_admin.sql` 을 열어 맨 위의 이메일만 바꾸고 Run 합니다.
+   UID 를 복사할 필요 없이 이메일로 찾아 넣고, 끝나면 현재 관리자 목록을 보여 줍니다.
+3. 새로고침하면 상단에 **교회 행정** 메뉴가 나타납니다.
+
+> `admins` 에 들어가면 교적·재정을 포함해 모든 문이 열리며, 이 표 안에서는 등급 차이가 없습니다.
+> 관리자를 더할 때마다 같은 파일의 이메일만 바꾸어 다시 Run 하면 됩니다.
 
 **4단계 · 교적 올리기**
 ```bash
