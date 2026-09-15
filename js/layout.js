@@ -329,14 +329,32 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function () { var el = document.getElementById("navMember"); if (el) el.hidden = false; })
         .catch(function () {});
+      // 직분(집사·권사·장로·담임목사)이 교적에 등록돼 있으면 머리말의 호칭을 그것으로 바꾼다
+      fetch(window.SUPABASE_URL + "/rest/v1/profiles?id=eq." + uid + "&select=name,role", { headers: h })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (rows) {
+          var p = rows && rows[0];
+          if (!p || !p.role) return;
+          var el = document.querySelector(".auth-name");
+          if (el) el.innerHTML = withTitle(p.name || "", p.role);
+        })
+        .catch(function () {});
     }
     window.__revealMenus = revealMenus;
+
+    /* 이름 옆에 직분을 붙인다 — "강명우 담임목사님".
+       교회에서는 이름만 부르지 않는다. 직분은 profiles.role 에서 가져오고,
+       아직 비어 있으면 담임목사님만은 config 의 이름으로 알아본다. */
+    function withTitle(name, role) {
+      if (!role && CH.pastor && name === CH.pastor) role = "담임목사";
+      return esc(name) + (role ? " " + esc(role) : "") + "님";
+    }
 
     function drawLoggedIn(user) {
       var meta = user.user_metadata || {};
       var name = meta.name || meta.full_name || meta.nickname || (user.email ? user.email.split("@")[0] : "성도");
       slot.innerHTML =
-        '<a class="auth-name" href="mypage.html">' + esc(name) + "님</a>" +
+        '<a class="auth-name" href="mypage.html">' + withTitle(name, meta.role) + "</a>" +
         '<button class="auth-btn" id="logoutBtn">로그아웃</button>';
       document.getElementById("logoutBtn").addEventListener("click", function (ev) {
         var b = ev.currentTarget; b.disabled = true; b.textContent = "로그아웃 중…";
@@ -372,7 +390,7 @@
     sdk.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
     sdk.onload = function () {
       var a = document.createElement("script");
-      a.src = "js/auth.js?v=4";
+      a.src = "js/auth.js?v=5";
       document.body.appendChild(a);
     };
     document.head.appendChild(sdk);
