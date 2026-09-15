@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <!-- 히어로의 히브리어 형상(쉐키나)용 서체 -->
   <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=7" />
+  <link rel="stylesheet" href="css/style.css?v=8" />
 </head>
 <body>
 
@@ -45,6 +45,9 @@
         <a class="hero-btn" href="word.html">이번 주 말씀</a>
         <a class="hero-btn" href="about.html#directions">오시는 길</a>
       </div>
+      <!-- 최고관리자로 로그인하면 여기에 편집 버튼이 붙습니다(js/content.js).
+           첫 화면 제목은 설교와 따로 관리합니다 — 시리즈는 설교 한 편보다 오래갑니다. -->
+      <div class="hero-edit" id="heroEdit"></div>
     </div>
 
     <!-- 바로가기 카드 줄 -->
@@ -70,21 +73,8 @@
         <a class="more" href="word.html#archive">자세히 보기</a>
       </div>
 
-      <div class="feature">
-        <!-- 설교 영상: 유튜브 주소를 넣으면 바로 재생됩니다.
-             <iframe src="https://www.youtube.com/embed/영상ID" allowfullscreen></iframe> -->
-        <div class="feature-media">
-          <div class="placeholder">설교 영상을 등록하면<br />이 자리에 재생 화면이 나옵니다.</div>
-        </div>
-        <div class="feature-info">
-          <p class="cat">주일 낮 예배</p>
-          <h3>반석 위에 지은 집</h3>
-          <p class="en">A House Built on the Rock</p>
-          <p class="ref">마태복음 7:24–27 · 강명우 목사 · 2026.09.13</p>
-          <blockquote>비가 내리고 창수가 나고 바람이 불어 그 집에 부딪치되 무너지지 아니하나니 이는 주추를 반석 위에 놓은 까닭이요</blockquote>
-          <a class="btn btn-line" href="word.html">설교 다시 보기</a>
-        </div>
-      </div>
+      <!-- 이번 주 설교를 그대로 보여 줍니다. 말씀 페이지에서 고치면 여기도 함께 바뀝니다. -->
+      <div id="homeFeature"><p class="qt-loading">불러오는 중…</p></div>
     </div>
   </section>
 
@@ -197,7 +187,8 @@
     </div>
   </section>
 
-  <script src="js/config.js?v=7"></script>
-  <script src="js/layout.js?v=7"></script>
+  <script src="js/config.js?v=8"></script>
+  <script src="js/layout.js?v=8"></script>
+  <script src="js/content.js?v=8"></script>
 </body>
 </html>

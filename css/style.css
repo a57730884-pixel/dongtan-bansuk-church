@@ -605,9 +605,80 @@ body.menu-lock{overflow:hidden}
   .consent-table th{width:4.6em}
 }
 
+/* ============ 최고관리자 편집 도구 ============
+   평소에는 없는 버튼이다. 권한이 확인된 뒤에야 화면에 붙는다. */
+.sec-actions{display:flex;align-items:center;gap:8px}
+.admin-row{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.admin-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--line);background:#fff;color:var(--nav);border-radius:999px;
+  padding:9px 18px;font-size:.9rem;font-weight:500;cursor:pointer;transition:.16s;font-family:inherit;
+}
+.admin-btn:hover{border-color:var(--accent);color:var(--accent)}
+.admin-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.admin-btn.primary:hover{background:var(--accent-2);border-color:var(--accent-2);color:#fff}
+.admin-btn.card-edit{position:absolute;top:10px;right:10px;padding:6px 12px;font-size:.8rem;background:rgba(255,255,255,.94);box-shadow:0 2px 8px rgba(0,0,0,.14);z-index:2}
+.admin-btn.on-hero{background:rgba(22,14,8,.42);border-color:rgba(255,255,255,.6);color:#fff}
+.admin-btn.on-hero:hover{background:#fff;color:#4a2008;border-color:#fff}
+.hero-edit{margin-top:22px}
+.hero-edit:empty{display:none}
+
+.empty-card{
+  border:1px dashed var(--line);border-radius:var(--radius);background:var(--gray);
+  padding:44px 20px;text-align:center;color:var(--muted);
+}
+.empty-card p{margin:0}
+.card-thumb.has-img{padding:0;overflow:hidden}
+.card-thumb.has-img img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* 편집 모달 */
+.modal-box-edit{max-width:560px;padding:36px 32px 30px}
+.edit-title{font-size:1.24rem;margin:0 0 20px;color:var(--ink)}
+.edit-form{display:flex;flex-direction:column;gap:14px}
+.edit-form textarea,.edit-form select{
+  width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:6px;
+  font:inherit;color:var(--body);background:#fff;
+}
+.edit-form textarea{resize:vertical;line-height:1.6}
+.edit-help{
+  margin:0;padding:12px 14px;background:var(--soft);border-radius:var(--radius);
+  font-size:.86rem;color:var(--body);line-height:1.6;
+}
+.edit-help code{background:#fff;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:.92em}
+.edit-actions{display:flex;align-items:center;gap:10px;margin-top:6px}
+.edit-spacer{flex:1}
+.edit-actions .btn{padding:11px 22px;font-size:.92rem}
+.edit-del{
+  border:1px solid rgba(192,57,43,.4);background:#fff;color:#c0392b;border-radius:2px;
+  padding:11px 18px;font-size:.92rem;cursor:pointer;font-family:inherit;
+}
+.edit-del:hover{background:#c0392b;color:#fff;border-color:#c0392b}
+
+/* 첫 화면 미리 보기 — 고치는 동안 결과를 바로 본다 */
+.hero-preview{margin-top:4px}
+.hp-label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:6px}
+.hp-box{
+  background:linear-gradient(104deg,#0a4f62,#157a83 26%,#bda071 58%,#cf7f2f 82%,#94430f);
+  border-radius:var(--radius);padding:22px 20px;text-align:center;color:#fff;
+}
+.hp-series{font-size:.76rem;letter-spacing:.16em;margin:0 0 8px;color:rgba(255,255,255,.88)}
+.hp-h1{margin:0;font-size:1.05rem;font-weight:400;line-height:1.3;text-shadow:0 2px 14px rgba(22,10,2,.5)}
+.hp-h1 .big{font-size:1.45em;font-weight:700;letter-spacing:-.03em}
+.hp-l2{display:block;margin-top:2px}
+.hp-ref{font-size:.6em;color:#f2cd92;margin-left:.6em;vertical-align:.8em}
+.hp-en{margin:12px 0 0;font-size:.78rem;letter-spacing:.05em;color:rgba(255,255,255,.92)}
+
+@media (max-width:600px){
+  .modal-box-edit{max-width:none;border-radius:0;min-height:100vh;padding:56px 22px 40px}
+  .admin-row{justify-content:stretch}
+  .admin-row .admin-btn{flex:1;justify-content:center}
+  .edit-actions{flex-wrap:wrap}
+  .edit-actions .btn,.edit-del{flex:1 1 40%;text-align:center}
+}
+
 /* ============ 인쇄 ============ */
 @media print{
-  #header,.footer,.tabbar,.modal,.to-top,.noprint{display:none !important}
+  #header,.footer,.tabbar,.modal,.to-top,.noprint,.admin-btn,.admin-row,.hero-edit{display:none !important}
   body{padding:0}
   .page-hero,.hero{margin-top:0}
 }

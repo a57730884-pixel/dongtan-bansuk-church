@@ -387,6 +387,9 @@
         var canFinance = !!(res[1] && res[1][0] && res[1][0].can_finance);
         applyAdminNav(isAdmin, canFinance);
         if (isAdmin) markAdmin();
+        // 권한을 화면 전체에 알린다 — 설교·히어로 편집 버튼(content.js)이 이것을 듣는다
+        window.__perm = { isAdmin: isAdmin, canFinance: canFinance };
+        document.dispatchEvent(new CustomEvent("perm-ready", { detail: window.__perm }));
       });
 
       var el = document.getElementById("navMember");
@@ -450,7 +453,7 @@
     sdk.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
     sdk.onload = function () {
       var a = document.createElement("script");
-      a.src = "js/auth.js?v=7";
+      a.src = "js/auth.js?v=8";
       document.body.appendChild(a);
     };
     document.head.appendChild(sdk);
