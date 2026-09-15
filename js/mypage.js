@@ -35,14 +35,15 @@ console.log('[mypage.js] v1');
     root.innerHTML = '<p class="qt-loading">불러오는 중…</p>';
     WPF.call('me').then(function (me) {
       var isMember = me.status === '정회원';
-      // 차례: 내 상태 → 성경 읽기 → 헌금·가정 → 동의 내역.
-      // 성경 읽기를 헌금보다 위에 둔다 — 신앙생활의 중심은 말씀이다.
-      var html = profileCard(me) + '<div id="mpReading"></div>';
+      // 차례: 내 상태 → 큐티 → 성경 읽기 → 헌금·가정 → 동의 내역.
+      // 말씀을 헌금보다 위에 둔다 — 신앙생활의 중심은 말씀이다.
+      var html = profileCard(me) + '<div id="mpQt"></div><div id="mpReading"></div>';
       html += isMember ? '<div id="mpOffer" class="fin-card"><p class="qt-loading">헌금 내역을 불러오는 중…</p></div>' +
                          '<div id="mpFamily" class="fin-card"><p class="qt-loading">가정 정보를 불러오는 중…</p></div>'
                        : matchCard();
       html += '<div id="mpConsent" class="fin-card"><p class="qt-loading">동의 내역을 불러오는 중…</p></div>';
       root.innerHTML = html;
+      if (window.__mountQt) window.__mountQt(document.getElementById('mpQt'));
       if (window.__mountReading) window.__mountReading(document.getElementById('mpReading'), { member: isMember });
       if (isMember) { loadOfferings(); loadFamily(); } else bindMatch();
       loadConsent();

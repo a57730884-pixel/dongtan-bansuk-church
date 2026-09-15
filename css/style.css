@@ -717,6 +717,78 @@ body.menu-lock{overflow:hidden}
 .rd-verses li::marker{color:var(--muted);font-size:.8em}
 .rd-err{color:#c0392b;margin:0}
 
+/* ============ 오늘의 큐티 ============ */
+.qt-card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:30px 32px 26px;
+}
+.qt-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.qt-eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;color:var(--accent)}
+.qt-date{font-size:.86rem;color:var(--muted)}
+.qt-card h3{margin:0;font-size:1.42rem;color:var(--ink);line-height:1.35}
+.qt-ref{margin:6px 0 0;font-size:.94rem;color:var(--accent-2)}
+.qt-peek{
+  margin-top:16px;color:var(--body);line-height:1.85;font-size:1rem;
+  max-height:9.5em;overflow:hidden;position:relative;
+}
+.qt-peek::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:3.4em;
+  background:linear-gradient(180deg,rgba(255,255,255,0),#fff);
+}
+.qt-peek p{margin:0 0 10px}
+.qt-acts{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px}
+.qt-acts .btn{padding:12px 26px}
+.qt-from{font-size:.84rem;color:var(--muted)}
+
+.qt-amen{
+  display:flex;align-items:center;gap:10px;margin-top:18px;padding:14px 16px;
+  background:#eef5ef;border:1px solid #cfe3d4;border-radius:var(--radius);
+  color:#2f5133;font-size:.95rem;cursor:pointer;
+}
+.qt-amen input{width:18px;height:18px;accent-color:#2f7f4f}
+.qt-amen.done{justify-content:center;font-weight:700}
+.qt-amen-note{margin:16px 0 0;padding:13px 15px;background:var(--gray);border-radius:var(--radius);font-size:.9rem;color:var(--muted)}
+.qt-amen-note.err{background:#fdecea;color:#c0392b}
+
+/* 큐티 전문 */
+.qt-box{max-width:720px;padding:40px 36px 34px;text-align:left}
+.qt-box h3{margin:6px 0 0;font-size:1.5rem;color:var(--ink);line-height:1.35}
+.qt-bible{
+  margin:20px 0 0;padding:18px 20px;background:var(--gray);border-radius:var(--radius);
+  font-size:.95rem;line-height:1.9;color:var(--body);max-height:34vh;overflow:auto;
+}
+.qt-body{margin-top:22px;font-size:1.02rem;line-height:1.95;color:var(--body)}
+.qt-body p{margin:0 0 14px}
+.qt-prayer{
+  margin-top:24px;padding:20px 22px;background:var(--soft);border-radius:var(--radius);
+  font-size:.98rem;line-height:1.9;color:var(--body);
+}
+.qt-prayer-label{margin:0 0 8px;font-size:.8rem;font-weight:700;letter-spacing:.1em;color:var(--accent)}
+
+/* 나의 신앙생활 — 내 큐티 */
+.qt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 20px}
+.qt-stat{background:var(--gray);border-radius:var(--radius);padding:14px 10px;text-align:center}
+.qt-stat b{display:block;font-size:1.5rem;color:var(--ink);line-height:1.1}
+.qt-stat span{display:block;font-size:.8rem;color:var(--muted);margin-top:4px}
+.qt-cal-label{margin:0 0 8px;font-size:.84rem;color:var(--muted)}
+.qt-cal{display:grid;grid-template-columns:repeat(15,1fr);gap:4px;margin-bottom:6px}
+.qt-cell{aspect-ratio:1;border-radius:3px;background:var(--gray)}
+.qt-cell.on{background:#2f7f4f}
+.qt-list{list-style:none;margin:18px 0 0;padding:0}
+.qt-list li{display:flex;gap:12px;align-items:baseline;padding:9px 0;border-top:1px solid var(--line);font-size:.92rem}
+.ql-date{color:var(--muted);font-size:.84rem;white-space:nowrap;min-width:5.6em}
+.ql-title{flex:1;color:var(--body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ql-amen{color:#2f7f4f;font-size:.82rem;white-space:nowrap}
+
+@media (max-width:700px){
+  .qt-card{padding:24px 20px 22px}
+  .qt-card h3{font-size:1.2rem}
+  .qt-box{max-width:none;border-radius:0;min-height:100vh;padding:56px 22px 40px}
+  .qt-stats{grid-template-columns:repeat(2,1fr)}
+  .qt-cal{grid-template-columns:repeat(10,1fr)}
+  .qt-acts .btn{flex:1 1 100%;text-align:center}
+}
+
 /* 구속사 파노라마 — 본문보다 먼저 읽는 해설 */
 .rd-pano{
   background:var(--soft);border:1px solid #d7e4f7;border-radius:var(--radius);
