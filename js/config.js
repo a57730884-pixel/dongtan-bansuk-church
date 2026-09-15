@@ -13,6 +13,7 @@ window.CHURCH = {
   name: "동탄반석교회",
   nameEn: "DONGTAN BANSUK CHURCH",
   pastor: "강명우",                       // 담임목사(기부금영수증 대표자)
+  motto: "하나님의 영광을 드러내는 교회",     // 표어 — 첫 화면과 푸터에 함께 쓰입니다
   address: "경기 화성시 동탄구 동탄지성로 84",   // 도로명 주소
   addressJibun: "동탄구 반송동 42-8",         // 지번 — 오래된 내비게이션용
   map: { lat: 37.2072341, lng: 127.0656236 },  // 지도 마커 자리

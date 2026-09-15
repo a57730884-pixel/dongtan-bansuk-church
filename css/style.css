@@ -147,12 +147,11 @@ body.menu-lock{overflow:hidden}
 }
 
 /* ============ 히어로 ============ */
-/* 그림: 펜으로 그린 한 장면 — 앞서 걸으시는 예수님, 하늘에 펼쳐진 성경, 그 위에 머무는 영광
-     · 왼쪽 청록에서 오른쪽 주황으로 하루가 건너가는 듯한 듀오톤 위에
-       먹빛 펜 선만으로 형태를 세운다. 색은 배경이 맡고, 형태는 선이 맡는다.
-     · 그림은 images/hero-sketch.svg 한 장(해칭선은 tools/gen_hero_sketch.js 가 생성).
-     · 가운데를 비워 두었다. 제목과 히브리어가 설 자리다.
-   사진으로 바꾸려면 .hero 의 --hero-image 에 주소만 넣으면 그림 위에 얹힙니다. */
+/* 그림: 펜 스케치 한 장 — 좁은 길을 앞서 걸어가시는 예수님(왼쪽, 청록)과
+   빛 가운데 펼쳐진 성경(오른쪽, 주황). 가운데는 비어 있다. 제목이 설 자리다.
+     · images/hero.webp — 넓은 화면(16:9). 원본이 가로로 길어 위쪽 하늘을 이어 붙였다.
+     · images/hero-tall.webp — 1000px 이하. 성경을 위, 예수님을 아래로 다시 앉힌 구도.
+   배경 그러데이션은 그림이 늦게 뜰 때의 바탕이자, 그림 가장자리와 이어지는 색이다. */
 .hero{
   --hero-image:none;
   position:relative;margin-top:var(--header-h);min-height:720px;
@@ -164,8 +163,10 @@ body.menu-lock{overflow:hidden}
 }
 .hero picture{position:absolute;inset:0;z-index:-2;display:block;pointer-events:none}
 .hero-art{
-  width:100%;height:100%;display:block;
-  object-fit:cover;object-position:center 46%;user-select:none;
+  width:100%;height:100%;display:block;user-select:none;
+  /* 그림은 늘 아래에 붙인다. 히어로는 글이 많아 화면마다 높이가 달라지는데,
+     위쪽은 이어 붙인 하늘이라 잘려도 그만이고 예수님과 성경은 아래에 있다. */
+  object-fit:cover;object-position:center bottom;
 }
 /* 글자가 그림 위에서도 읽히도록 위아래만 아주 옅게 눌러 준다 */
 .hero::after{
@@ -181,18 +182,41 @@ body.menu-lock{overflow:hidden}
    같은 글자를 조금 어긋나게 두 번 겹쳐, 한 번에 긋지 못한 펜 자국처럼 보이게 한다.
    화면낭독기에는 읽히지 않도록 마크업에서 aria-hidden 으로 감춘다. */
 .hero-hebrew{
-  position:relative;display:block;margin:0 0 26px;user-select:none;
+  position:relative;display:block;margin:0 0 30px;user-select:none;
   font-family:"Frank Ruhl Libre","Noto Serif Hebrew","Times New Roman",serif;
-  font-size:clamp(3.2rem,9.5vw,8.2rem);line-height:.92;direction:rtl;letter-spacing:.01em;
+  font-size:clamp(2.8rem,8.2vw,7.4rem);line-height:1.12;direction:rtl;letter-spacing:.01em;
 }
 .hero-hebrew span{
-  color:transparent;-webkit-text-stroke:1.3px rgba(36,22,9,.62);
+  color:transparent;-webkit-text-stroke:1.3px rgba(255,248,236,.8);
+  /* 사진 위에 놓이므로 밝은 획으로 긋고, 그림자로 한 번 눌러 준다.
+     밝은 하늘에서도 어두운 성경 위에서도 같은 굵기로 읽힌다. */
+  filter:drop-shadow(0 2px 12px rgba(20,10,4,.6));
 }
 .hero-hebrew span:last-child{
   position:absolute;left:0;right:0;top:0;
   -webkit-text-stroke-width:1px;color:transparent;
-  opacity:.5;transform:translate(2.5px,1.5px) rotate(.35deg);
+  opacity:.45;transform:translate(2.5px,1.5px) rotate(.35deg);filter:none;
 }
+
+/* 표어 — 히브리어 아래 한 줄. 설교 제목과 다투지 않도록 획을 가늘게 두고,
+   양옆에 짧은 줄을 그어 "현판"처럼 보이게 한다. */
+.hero-motto{
+  display:flex;flex-direction:column;align-items:center;gap:12px;margin:0 0 28px;
+}
+.hero-motto .hm-word{
+  font-size:.74rem;letter-spacing:.34em;text-indent:.34em;font-weight:300;
+  color:rgba(255,255,255,.8);text-shadow:0 1px 12px rgba(20,10,4,.6);
+}
+.hero-motto .hm-line{
+  position:relative;display:inline-block;
+  font-size:clamp(1.06rem,2.1vw,1.46rem);font-weight:400;letter-spacing:.03em;
+  color:#fff;text-shadow:0 2px 20px rgba(22,10,2,.7);
+}
+.hero-motto .hm-line::before,.hero-motto .hm-line::after{
+  content:"";position:absolute;top:.72em;width:38px;height:1px;background:rgba(255,255,255,.5);
+}
+.hero-motto .hm-line::before{right:100%;margin-right:20px}
+.hero-motto .hm-line::after{left:100%;margin-left:20px}
 
 /* 제목 판 — 그림을 가리지 않도록 유리처럼 얇게 */
 .hero-panel{
@@ -243,7 +267,9 @@ body.menu-lock{overflow:hidden}
 
 @media (max-width:1000px){
   .hero{min-height:0;padding:76px 20px 44px}
-  .hero-art{object-position:center 42%}
+  /* 1000px 이하에서는 세로 그림(hero-tall)이 쓰인다. 화면이 그림보다 납작하므로
+     위아래가 잘린다 — 성경이 조금 걸치고 예수님이 온전히 남는 자리로 맞춘다. */
+  .hero-art{object-position:center 30%}
   .hero-strip{position:static;margin-top:36px}
   .hero-panel{padding:24px 26px 28px;display:block}
   .hero h1 .l2{padding-left:1.2em}
@@ -254,9 +280,17 @@ body.menu-lock{overflow:hidden}
 }
 @media (max-width:600px){
   .hero{padding:60px 18px 38px}
-  /* 좁은 화면에서는 세로로 다시 그린 구도(hero-sketch-tall.svg)가 쓰인다 */
-  .hero-art{object-position:center top}
-  .hero-hebrew{margin-bottom:18px}
+  /* 휴대폰에서는 그림의 밝은 주황이 화면 위쪽에 온다. 히브리어가 묻히지 않도록
+     위쪽 그늘을 조금 더 짙게 깐다. */
+  .hero::after{background:
+    radial-gradient(72% 42% at 50% 34%,rgba(255,250,240,.12),transparent 72%),
+    linear-gradient(180deg,rgba(8,42,52,.5),rgba(0,0,0,0) 44%,rgba(74,32,8,.44));}
+  /* 휴대폰은 화면 비율이 그림과 거의 같다. 그대로 다 보여 준다 */
+  .hero-art{object-position:center center}
+  .hero-hebrew{margin-bottom:20px}
+  .hero-motto{gap:10px;margin:0 0 22px}
+  .hero-motto .hm-word{font-size:.68rem;letter-spacing:.26em;text-indent:.26em}
+  .hero-motto .hm-line::before,.hero-motto .hm-line::after{display:none}
   .hero-series{font-size:.8rem;text-align:center}
   .hero h1 .l2{padding-left:0}
   .hero h1 .ref{display:block;margin:10px 0 0;vertical-align:0;font-size:.46em}
@@ -433,6 +467,8 @@ body.menu-lock{overflow:hidden}
 .footer-brand{display:flex;align-items:center;gap:12px}
 .footer-brand .logo-mark{height:38px}
 .footer .logo-en{display:block;margin-top:4px;color:var(--muted)}
+/* 표어 — 교회 이름 아래 한 줄. 상호명처럼 늘 같은 자리에 둔다 */
+.footer .logo-motto{display:block;margin-top:6px;font-size:.82rem;letter-spacing:.02em;color:var(--accent)}
 .footer-inner{display:flex;flex-direction:column;gap:22px}
 .footer-nav{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:.93rem;font-weight:500}
 .footer-nav a{color:var(--nav)}

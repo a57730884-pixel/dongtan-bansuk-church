@@ -131,7 +131,8 @@
     '<footer class="footer">' +
       '<div class="container footer-inner">' +
         '<div class="footer-brand"><img class="logo-mark" src="images/logo.svg" alt="" /><div><span class="logo-kr">' + esc(CH.name || "") + "</span>" +
-          '<span class="logo-en">' + esc(CH.nameEn || "") + "</span></div></div>" +
+          '<span class="logo-en">' + esc(CH.nameEn || "") + "</span>" +
+          (CH.motto ? '<span class="logo-motto">' + esc(CH.motto) + "</span>" : "") + "</div></div>" +
         '<nav class="footer-nav">' +
           NAV.filter(function (n) { return !n.adminOnly && !n.memberOnly; })
              .map(function (n) { return '<a href="' + n.href + '">' + n.label + "</a>"; }).join("") +
@@ -228,6 +229,13 @@
     "</div>" : "");
 
   document.body.insertAdjacentHTML("beforeend", footerHTML);
+
+  /* 표어 — 글은 js/config.js 한 곳에서만 고친다.
+     마크업(index.html)에 적어 둔 글은 스크립트가 늦게 뜰 때 먼저 보일 밑그림이다. */
+  if (CH.motto) {
+    var mottoSlots = document.querySelectorAll("[data-motto]");
+    for (var mi = 0; mi < mottoSlots.length; mi++) mottoSlots[mi].textContent = CH.motto;
+  }
 
   /* ===== 온라인 헌금 모달 ===== */
   (function () {

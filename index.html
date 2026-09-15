@@ -16,24 +16,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <!-- 히어로의 히브리어 형상(쉐키나)용 서체 -->
   <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=17" />
+  <link rel="stylesheet" href="css/style.css?v=19" />
 </head>
 <body>
 
-  <!-- ===== 히어로 =====
-       배경 그림을 넣으려면 아래 style 의 --hero-image 주석을 풀고 파일 이름만 바꾸세요.
-       예) style="--hero-image:url('images/hero.jpg')"
-       넣지 않으면 청록→황토 듀오톤 배경이 그대로 쓰입니다. -->
-  <section class="hero"><!-- style="--hero-image:url('images/hero.jpg')" -->
-    <!-- 펜으로 그린 한 장면: 앞서 걸으시는 예수님, 하늘에 펼쳐진 성경, 그 위에 머무는 영광.
-         그림은 images/hero-sketch.svg 한 장이고, tools/gen_hero_sketch.js 로 다시 만들 수 있습니다. -->
+  <!-- ===== 히어로 ===== -->
+  <section class="hero">
+    <!-- 첫 화면 그림 — 좁은 길을 앞서 걸어가시는 예수님과, 빛 가운데 펼쳐진 성경.
+         넓은 화면은 images/hero.webp(16:9), 좁은 화면은 세로로 다시 앉힌 images/hero-tall.webp.
+         한 장으로 두 화면을 덮으면 가로로 긴 그림의 양 끝(예수님·성경)이 잘려 나갑니다. -->
     <picture>
-      <source media="(max-width:700px)" srcset="images/hero-sketch-tall.svg?v=2" />
-      <img class="hero-art" src="images/hero-sketch.svg?v=2" alt="" aria-hidden="true" />
+      <source media="(max-width:1000px)" type="image/webp" srcset="images/hero-tall.webp?v=19" />
+      <source media="(max-width:1000px)" srcset="images/hero-tall.jpg?v=19" />
+      <source type="image/webp" srcset="images/hero.webp?v=19" />
+      <img class="hero-art" src="images/hero.jpg?v=19" alt="" aria-hidden="true" />
     </picture>
 
     <div class="hero-inner">
       <p class="hero-hebrew" aria-hidden="true"><span>שכינה</span><span aria-hidden="true">שכינה</span></p>
+      <!-- 표어 — 교회가 오래 붙들 한 줄. 설교 제목(아래 판)과 달리 바뀌지 않습니다.
+           글은 js/config.js 의 CHURCH.motto 가 원본이고, 여기 적힌 것은 첫 그림입니다. -->
+      <p class="hero-motto">
+        <span class="hm-word">쉐키나 · 하나님이 함께 머무심</span>
+        <span class="hm-line" data-motto>하나님의 영광을 드러내는 교회</span>
+      </p>
       <div class="hero-panel">
         <p class="hero-series">마/태/복/음/강/해</p>
         <h1>
@@ -194,13 +200,13 @@
     </div>
   </section>
 
-  <script src="js/config.js?v=17"></script>
-  <script src="js/layout.js?v=17"></script>
-  <script src="js/install.js?v=17"></script>
-  <script src="js/content.js?v=17"></script>
-  <script src="js/notices.js?v=17"></script>
-  <script src="js/bible-books.js?v=17"></script>
-  <script src="js/qt-audio.js?v=17"></script>
-  <script src="js/qt.js?v=17"></script>
+  <script src="js/config.js?v=19"></script>
+  <script src="js/layout.js?v=19"></script>
+  <script src="js/install.js?v=19"></script>
+  <script src="js/content.js?v=19"></script>
+  <script src="js/notices.js?v=19"></script>
+  <script src="js/bible-books.js?v=19"></script>
+  <script src="js/qt-audio.js?v=19"></script>
+  <script src="js/qt.js?v=19"></script>
 </body>
 </html>
