@@ -1,4 +1,5 @@
-/* mypage.js — 나의 기록(로그인 성도 전용)
+/* mypage.js — 나의 신앙생활(로그인 성도 전용)
+ * · 성경 읽기(js/reading.js) — 온 교회가 같은 날 같은 본문을 읽는 365일 표
  * · 교적 인증: 이름 + 생년월일이 교적과 일치하면 준회원 → 정회원
  * · 내 헌금 내역 / 배우자 합산 (본인·세대주만, RLS 로 강제)
  * · 우리 가정(가계도) — 이름·관계·생년·직분만, 연락처는 보이지 않음
@@ -34,12 +35,15 @@ console.log('[mypage.js] v1');
     root.innerHTML = '<p class="qt-loading">불러오는 중…</p>';
     WPF.call('me').then(function (me) {
       var isMember = me.status === '정회원';
-      var html = profileCard(me);
+      // 차례: 내 상태 → 성경 읽기 → 헌금·가정 → 동의 내역.
+      // 성경 읽기를 헌금보다 위에 둔다 — 신앙생활의 중심은 말씀이다.
+      var html = profileCard(me) + '<div id="mpReading"></div>';
       html += isMember ? '<div id="mpOffer" class="fin-card"><p class="qt-loading">헌금 내역을 불러오는 중…</p></div>' +
                          '<div id="mpFamily" class="fin-card"><p class="qt-loading">가정 정보를 불러오는 중…</p></div>'
                        : matchCard();
       html += '<div id="mpConsent" class="fin-card"><p class="qt-loading">동의 내역을 불러오는 중…</p></div>';
       root.innerHTML = html;
+      if (window.__mountReading) window.__mountReading(document.getElementById('mpReading'), { member: isMember });
       if (isMember) { loadOfferings(); loadFamily(); } else bindMatch();
       loadConsent();
     }).catch(function (e) {

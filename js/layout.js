@@ -29,7 +29,7 @@
       { href: "news.html#album", label: "앨범" },
       { href: "news.html#contact", label: "문의 · 새가족" }
     ] },
-    { href: "mypage.html", label: "나의 기록", memberOnly: true },
+    { href: "mypage.html", label: "나의 신앙생활", memberOnly: true },
     /* 교회 행정 — 권한에 따라 보이는 것이 다르다.
          최고관리자   교적관리 + 재정관리
          재정권한자   재정관리 하나만 (메뉴 이름도 '재정관리' 로 바뀐다)
@@ -37,6 +37,7 @@
        실제 차단은 화면이 아니라 데이터베이스의 접근 규칙(RLS)이 한다.
        메뉴를 감추는 것은 헛걸음을 막기 위한 배려일 뿐이다. */
     { href: "gyojeok.html", label: "교회 행정", adminOnly: true, sub: [
+      { href: "care.html", label: "목회 행정", id: "navCare" },
       { href: "gyojeok.html", label: "교적관리", id: "navGyojeok" },
       { href: "finance.html", label: "재정관리", id: "navFinance" }
     ] }
@@ -111,7 +112,7 @@
           "<tr><th>이용 목적</th><td>주보·공지·행사 등 교회 소식 안내</td></tr>" +
           "<tr><th>보유 기간</th><td>수신을 거부하시거나 탈퇴하실 때까지</td></tr>" +
         "</table>" +
-        '<p class="consent-note">동의하지 않으셔도 가입과 서비스 이용에 아무런 제한이 없습니다. 가입 뒤 <b>나의 기록</b> 화면에서 언제든 바꾸실 수 있습니다.</p>' }
+        '<p class="consent-note">동의하지 않으셔도 가입과 서비스 이용에 아무런 제한이 없습니다. 가입 뒤 <b>나의 신앙생활</b> 화면에서 언제든 바꾸실 수 있습니다.</p>' }
   ];
   window.CONSENTS = CONSENTS;
 
@@ -148,11 +149,11 @@
       "</div>" +
     "</footer>" +
 
-    /* 모바일 하단 고정바 — 말씀 · 소식 · 나의 기록 · 로그인 */
+    /* 모바일 하단 고정바 — 말씀 · 소식 · 신앙생활 · 로그인 (좁은 화면이라 이름을 줄인다) */
     '<nav class="tabbar" id="tabbar">' +
       '<a href="word.html"><span class="tb-ico">📖</span>말씀</a>' +
       '<a href="news.html"><span class="tb-ico">🔔</span>소식</a>' +
-      '<a href="mypage.html"><span class="tb-ico">🙏</span>나의 기록</a>' +
+      '<a href="mypage.html"><span class="tb-ico">🙏</span>신앙생활</a>' +
       '<button type="button" id="tabLogin"><span class="tb-ico">👤</span><span id="tabLoginLabel">로그인</span></button>' +
     "</nav>" +
 
@@ -345,6 +346,7 @@
       if (!parent) return;
       var top = parent.querySelector("a");
       var gy = document.getElementById("navGyojeok");
+      var ca = document.getElementById("navCare");
       var fi = document.getElementById("navFinance");
       var drop = parent.querySelector(".nav-dropdown");
 
@@ -352,13 +354,15 @@
       parent.hidden = false;
 
       if (isAdmin) {
+        if (ca) ca.hidden = false;
         if (gy) gy.hidden = false;
         if (fi) fi.hidden = false;
         if (drop) drop.hidden = false;
         parent.classList.add("has-sub");
-        if (top) { top.href = "gyojeok.html"; top.innerHTML = '교회 행정<span class="nav-caret" aria-hidden="true">⌄</span>'; }
+        if (top) { top.href = "care.html"; top.innerHTML = '교회 행정<span class="nav-caret" aria-hidden="true">⌄</span>'; }
       } else {
         // 재정권한만 받은 분 — 교적은 열리지 않으므로 메뉴에서 지우고 이름도 바꾼다
+        if (ca) ca.hidden = true;
         if (gy) gy.hidden = true;
         if (fi) fi.hidden = false;
         if (drop) drop.hidden = true;
@@ -393,7 +397,7 @@
       });
 
       var el = document.getElementById("navMember");
-      if (el) el.hidden = false;   // 나의 기록 — 로그인한 분이면 누구나(교적 인증도 여기서 한다)
+      if (el) el.hidden = false;   // 나의 신앙생활 — 로그인한 분이면 누구나(교적 인증도 여기서 한다)
 
       // 직분(집사·권사·장로·담임목사)이 교적에 등록돼 있으면 머리말의 호칭을 그것으로 바꾼다
       get("profiles?id=eq." + uid + "&select=name,role").then(function (rows) {
@@ -453,7 +457,7 @@
     sdk.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
     sdk.onload = function () {
       var a = document.createElement("script");
-      a.src = "js/auth.js?v=8";
+      a.src = "js/auth.js?v=9";
       document.body.appendChild(a);
     };
     document.head.appendChild(sdk);
