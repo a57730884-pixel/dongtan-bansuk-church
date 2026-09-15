@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=21" />
+  <link rel="stylesheet" href="css/style.css?v=22" />
 </head>
 <body>
 
@@ -30,12 +30,21 @@
       <div class="sec-head"><div>
         <h2>인사말</h2>
       </div></div>
-      <div class="form-card" style="max-width:860px">
+      <!-- 담임목사 사진과 인사말을 나란히. 사진은 images/pastor.jpg — 원본은 3:4 초상 -->
+      <div class="form-card greet" style="max-width:960px">
+        <figure class="greet-photo">
+          <picture>
+            <source type="image/webp" srcset="images/pastor.webp?v=22" />
+            <img src="images/pastor.jpg?v=22" width="480" height="640" alt="강명우 담임목사" loading="lazy" />
+          </picture>
+        </figure>
+        <div class="greet-text">
         <p>동탄반석교회 홈페이지를 찾아 주신 여러분을 환영합니다.</p>
         <p>우리 교회는 주님의 말씀을 반석 삼아 세워진 공동체입니다. 비가 내리고 바람이 불어도 무너지지 않는 집처럼, 말씀을 듣고 행하는 삶으로 함께 서 가기를 소망합니다.</p>
         <p>주일마다 드리는 예배로 한 주를 시작하고, 서로의 짐을 나누어 지며, 지역과 이웃을 섬기는 교회가 되겠습니다. 언제든 편한 마음으로 찾아와 주십시오.</p>
         <p style="margin-top:24px;text-align:right;color:var(--ink-soft);">담임목사 <b style="color:var(--accent)">강명우</b></p>
         <!-- TODO: 목사님께 받은 인사말 원문으로 교체 -->
+        </div>
       </div>
     </div>
   </section>
@@ -125,9 +134,9 @@
     </div>
   </section>
 
-  <script src="js/config.js?v=21"></script>
-  <script src="js/layout.js?v=21"></script>
-  <script src="js/install.js?v=21"></script>
+  <script src="js/config.js?v=22"></script>
+  <script src="js/layout.js?v=22"></script>
+  <script src="js/install.js?v=22"></script>
   <script>
     /* 주소 복사 — 연세 드신 성도가 카카오톡으로 주소를 보내실 때 쓰십니다. */
     (function () {

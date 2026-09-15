@@ -601,6 +601,17 @@ body.menu-lock{overflow:hidden}
 .consent-table tr:first-child th,.consent-table tr:first-child td{border-top:0}
 .consent-table th{width:5.4em;color:var(--muted);font-weight:500;white-space:nowrap}
 .consent-note{color:var(--accent-soft);font-size:.82rem}
+/* 인사말 — 사진은 왼쪽에 서고 글은 오른쪽에서 흐른다. 좁은 화면에서는 위아래로 */
+.greet{display:flex;gap:36px;align-items:flex-start}
+.greet-photo{flex:0 0 220px;margin:0}
+.greet-photo img{display:block;width:100%;height:auto;border-radius:6px;box-shadow:0 6px 22px rgba(20,30,50,.14)}
+.greet-text{flex:1 1 auto;min-width:0}
+.greet-text p:first-child{margin-top:0}
+@media (max-width:700px){
+  .greet{flex-direction:column;align-items:center;gap:22px}
+  .greet-photo{flex:0 0 auto;width:min(200px,60%)}
+  .greet-text{width:100%}
+}
 .form-card .consent-table{margin:6px 0 18px}
 .form-card .consent-table th{width:8.6em}
 .form-card .consent-table th,.form-card .consent-table td{padding:9px 2px;font-size:.92rem}
