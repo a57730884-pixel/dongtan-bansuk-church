@@ -107,3 +107,26 @@ function png(size, px) {
   fs.writeFileSync(path, buf);
   console.log(path, size + "px", (buf.length / 1024).toFixed(1) + "KB");
 });
+
+/* favicon.ico — 주소창 아이콘.
+   SVG 아이콘을 걸어 두어도 브라우저는 /favicon.ico 를 한 번 찾아보고,
+   없으면 기록에 404 를 남깁니다. ICO 는 PNG 를 그대로 품을 수 있으므로
+   32px PNG 하나에 머리말만 붙여 만듭니다. */
+(function () {
+  const size = 32;
+  const body = png(size, draw(size, 3));
+  const head = Buffer.alloc(22);
+  head.writeUInt16LE(0, 0);            // 예약
+  head.writeUInt16LE(1, 2);            // 1 = 아이콘
+  head.writeUInt16LE(1, 4);            // 그림 한 장
+  head[6] = size; head[7] = size;      // 너비·높이
+  head[8] = 0; head[9] = 0;            // 팔레트 없음
+  head.writeUInt16LE(1, 10);           // 색 평면
+  head.writeUInt16LE(32, 12);          // 비트 수
+  head.writeUInt32BE(0, 14);           // 자리 확보 후 아래에서 채움
+  head.writeUInt32LE(body.length, 14);
+  head.writeUInt32LE(22, 18);          // 그림이 시작되는 자리
+  const ico = Buffer.concat([head, body]);
+  fs.writeFileSync("favicon.ico", ico);
+  console.log("favicon.ico", size + "px", (ico.length / 1024).toFixed(1) + "KB");
+})();
