@@ -1055,6 +1055,63 @@ body.menu-lock{overflow:hidden}
   .al-stage img{max-height:100%}
 }
 
+/* ============ 앱 설치 ============ */
+.install-bar{
+  position:fixed;left:14px;right:14px;bottom:14px;z-index:220;
+  display:flex;align-items:center;gap:12px;
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:12px 14px;box-shadow:0 12px 34px rgba(20,26,34,.18);
+  transform:translateY(130%);transition:transform .28s ease;
+}
+.install-bar.on{transform:translateY(0)}
+.install-icon{width:44px;height:44px;border-radius:10px;flex:0 0 auto}
+.install-text{flex:1;min-width:0;line-height:1.35}
+.install-text strong{display:block;font-size:.98rem;color:var(--ink)}
+.install-text span{display:block;font-size:.82rem;color:var(--muted);margin-top:2px}
+.install-go{
+  flex:0 0 auto;border:0;background:var(--accent);color:#fff;border-radius:999px;
+  padding:11px 22px;font-size:.94rem;font-weight:700;cursor:pointer;font-family:inherit;
+}
+.install-go:hover{background:var(--accent-2)}
+.install-close{
+  flex:0 0 auto;border:0;background:none;color:var(--muted);
+  font-size:1.5rem;line-height:1;cursor:pointer;padding:0 2px;
+}
+.install-link{cursor:pointer}
+
+.install-box{max-width:440px;text-align:center;padding:38px 32px 30px}
+.ib-logo{width:64px;height:64px;border-radius:14px;margin:0 auto 16px;display:block}
+.install-box h3{margin:0 0 8px;font-size:1.22rem;color:var(--ink)}
+.ib-lead{margin:0 0 20px;font-size:.92rem;color:var(--muted);line-height:1.6}
+.ib-steps{
+  list-style:none;counter-reset:ib;margin:0 0 22px;padding:0;text-align:left;
+}
+.ib-steps li{
+  counter-increment:ib;position:relative;padding:12px 0 12px 40px;
+  border-top:1px solid var(--line);font-size:.95rem;color:var(--body);line-height:1.6;
+}
+.ib-steps li:first-child{border-top:0}
+.ib-steps li::before{
+  content:counter(ib);position:absolute;left:0;top:11px;
+  width:26px;height:26px;border-radius:50%;background:var(--soft);color:var(--accent);
+  font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+.ib-ico{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:24px;height:24px;padding:0 5px;border-radius:6px;
+  background:var(--gray);border:1px solid var(--line);font-size:.9rem;vertical-align:-5px;
+}
+.ib-done{width:100%;padding:13px}
+
+/* 휴대폰 하단 고정바와 겹치지 않도록 */
+@media (max-width:860px){
+  .install-bar{bottom:76px}
+}
+@media (max-width:600px){
+  .install-box{max-width:none;border-radius:0;min-height:100vh;padding:56px 22px 40px}
+}
+@media print{ .install-bar{display:none !important} }
+
 /* ============ 인쇄 ============ */
 @media print{
   #header,.footer,.tabbar,.modal,.al-viewer,.to-top,.noprint,.admin-btn,.admin-row,.hero-edit{display:none !important}
