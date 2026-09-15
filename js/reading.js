@@ -1,7 +1,7 @@
 /* ============================================================
    동탄반석교회 — 성경 읽기 (나의 신앙생활)
    ------------------------------------------------------------
-   · 읽기표는 운평장로교회에서 쓰는 '구속사적 성경읽기 365' 입니다(js/bible-plan.js).
+   · 읽기표는 '구속사적 성경읽기 365' 입니다(js/bible-plan.js).
    · 온 교회가 같은 날 같은 본문을 읽습니다. 그래서 오늘의 진도는
      '올해 몇째 날인가' 로 정해지고, 기록에는 며칠째인지만 남습니다.
    · 본문은 우리말성경(data/urm/<약어>.json)에서 그날 필요한 책만 내려받습니다.
@@ -93,7 +93,7 @@
   }
 
   /* ── 음성으로 듣기 ─────────────────────────────────────
-     교회가 마련해 둔 낭독 음원을 장 단위로 이어 재생합니다
+     마련돼 있는 낭독 음원을 장 단위로 이어 재생합니다
      (bible-<책번호>-<장>.mp3). 음원이 없거나 열리지 않는 장은
      브라우저에 들어 있는 음성으로 대신 읽어 줍니다 — 그 편이
      "소리가 안 나요" 하고 멈추는 것보다 낫습니다. */
@@ -273,7 +273,7 @@
             (state.audio ? "🔊 듣기 그만" : "🔊 음성으로 듣기") + "</button>" +
           (state.member
             ? '<button type="button" class="btn ' + (isDone(state.day) ? "btn-line rd-undo" : "btn-solid") + '" id="rdCheck">' +
-                (isDone(state.day) ? "✓ 읽었습니다 (취소)" : "읽었습니다") + "</button>"
+                (isDone(state.day) ? "✓ " + state.day + "일째 읽음 (취소)" : state.day + "일째 읽었습니다") + "</button>"
             : '<span class="rd-lock">정회원으로 인증하시면 읽은 날을 기록할 수 있습니다</span>') +
         "</div>" +
         '<p class="auth-msg" id="rdMsg" hidden></p>' +
@@ -344,7 +344,7 @@
     function section(title, t) {
       var part = list.filter(function (b) { return b.t === t; });
       var done = part.filter(function (b) { return b.got >= b.c; }).length;
-      return '<div class="bk-sec"><p class="bk-sec-head">' + title +
+      return '<div class="bk-sec ' + (t ? "nt" : "ot") + '"><p class="bk-sec-head">' + title +
           ' <em>' + part.length + '권 중 ' + done + '권 마침</em></p>' +
         '<div class="bk-grid">' + part.map(function (b) {
           var p = Math.round(b.got / b.c * 100);

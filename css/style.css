@@ -842,6 +842,25 @@ body.menu-lock{overflow:hidden}
 .bk.full .bk-name{color:#1e874b;font-weight:700}
 .bk.full .bk-bar>i{background:#1e874b}
 
+/* 구약은 파랑, 신약은 빨강 — 두 언약을 색으로 나눈다 */
+.bk-sec.ot .bk-sec-head{color:#1d6fb8}
+.bk-sec.nt .bk-sec-head{color:#b5352c}
+
+.bk-sec.ot .bk-bar>i{background:#9ec7e8}
+.bk-sec.nt .bk-bar>i{background:#e8a9a3}
+
+.bk-sec.ot .bk.part{border-color:#bcd9ef;background:#f5fafd}
+.bk-sec.ot .bk.part .bk-bar>i{background:#1d6fb8}
+.bk-sec.ot .bk.full{border-color:#1d6fb8;background:#eaf3fb}
+.bk-sec.ot .bk.full .bk-name{color:#1d6fb8}
+.bk-sec.ot .bk.full .bk-bar>i{background:#1d6fb8}
+
+.bk-sec.nt .bk.part{border-color:#efc9c5;background:#fdf7f6}
+.bk-sec.nt .bk.part .bk-bar>i{background:#b5352c}
+.bk-sec.nt .bk.full{border-color:#b5352c;background:#fbeeec}
+.bk-sec.nt .bk.full .bk-name{color:#b5352c}
+.bk-sec.nt .bk.full .bk-bar>i{background:#b5352c}
+
 .bk-detail{
   margin-top:14px;background:var(--soft);border-radius:var(--radius);padding:16px 18px;
 }

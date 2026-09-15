@@ -1,11 +1,10 @@
 /* ============================================================
    동탄반석교회 — 오늘의 큐티
    ------------------------------------------------------------
-   · 큐티 '본문' 은 운평장로교회가 올리는 것을 함께 봅니다.
-     붙여넣어 복사해 두는 것이 아니라, 그쪽 공개 자료를 그때그때 읽어 옵니다.
-     한 번 올리면 두 교회에 함께 뜨고, 고치면 함께 고쳐집니다.
+   · 큐티 '본문' 은 외부 큐티 자료(js/config.js 의 QT_SOURCE)에서 읽어 옵니다.
+     복사해 두는 것이 아니라 그때그때 읽어 오므로, 원본이 고쳐지면 함께 고쳐집니다.
    · 큐티 '기록' — 누가 언제 아멘 했는가 — 은 이 교회 데이터베이스에 남습니다.
-     우리 성도의 신앙 기록을 남의 집에 맡기지 않습니다.
+     성도의 신앙 기록은 이 교회 안에 둡니다.
    · 쓰는 곳: 첫 화면(히어로 아래) · 나의 신앙생활
    ============================================================ */
 (function () {
@@ -24,7 +23,7 @@
     return new Date().toLocaleString("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" });
   }
 
-  /* 남의 집에서 온 글이므로 그대로 넣지 않는다.
+  /* 밖에서 온 글이므로 그대로 넣지 않는다.
      문단·강조·목록만 남기고 스크립트와 속성은 모두 떼어 낸다. */
   var OK_TAGS = { P: 1, BR: 1, B: 1, STRONG: 1, EM: 1, I: 1, U: 1, BLOCKQUOTE: 1, UL: 1, OL: 1, LI: 1, H3: 1, H4: 1, SPAN: 1, DIV: 1 };
   function clean(html) {
@@ -49,7 +48,7 @@
     return box.innerHTML;
   }
 
-  /* ── 운평에서 큐티 가져오기 (읽기만 합니다) ── */
+  /* ── 큐티 가져오기 (읽기만 합니다) ── */
   var COLS = "sermon_date,title,scripture,qt_bible_text,content,prayer";
   function fetchQt(limit) {
     var base = String(SRC.url).replace(/\/$/, "");
@@ -104,7 +103,6 @@
         '<div class="qt-peek">' + clean(today.content || "") + "</div>" +
         '<div class="qt-acts">' +
           '<button type="button" class="btn btn-solid" id="qtOpen">큐티 전문 보기</button>' +
-          '<span class="qt-from">운평장로교회와 함께 나눕니다</span>' +
         "</div>" +
         '<div id="qtAmen"></div>' +
       "</div>";
@@ -189,7 +187,7 @@
       '<div class="fin-card">' +
         '<div class="rd-head">' +
           '<h3 class="sub-title" style="margin:0">큐티</h3>' +
-          '<span class="rd-year">운평장로교회와 함께 나눕니다</span>' +
+          '<span class="rd-year">날마다 드리는 묵상</span>' +
         "</div>" +
         '<div class="qt-stats">' +
           '<div class="qt-stat"><b>' + (sum.qt_total || 0) + "</b><span>아멘 한 날</span></div>" +
