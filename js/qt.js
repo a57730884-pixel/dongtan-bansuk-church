@@ -254,6 +254,19 @@
     return { books: books, unknown: unknown };
   }
 
+  /* 표 머리에 붙일 한 줄 요약 — 접혀 있을 때도 어디까지 왔는지는 보이게 */
+  function foldBooks(key, title, books) {
+    function n(t) {
+      var part = books.filter(function (b) { return b.t === t; });
+      return part.filter(function (b) { return b.got > 0; }).length + "/" + part.length;
+    }
+    var sum = '<em class="fs-ot">구약 ' + n(0) + "</em><em class=\"fs-nt\">신약 " + n(1) + "</em>" +
+      '<em class="fs-unit">권 묵상</em>';
+    return window.foldBox
+      ? window.foldBox(key, title, sum, qtBookTable(books))
+      : '<p class="bk-title">' + title + "</p>" + qtBookTable(books);
+  }
+
   function qtBookTable(books) {
     function section(title, t) {
       var part = books.filter(function (b) { return b.t === t; });
@@ -291,7 +304,7 @@
     }
 
     mineEl.innerHTML =
-      '<div class="fin-card">' +
+      '<div class="fin-card qt-mine">' +
         '<div class="rd-head">' +
           '<h3 class="sub-title" style="margin:0">큐티</h3>' +
           '<span class="rd-year">날마다 드리는 묵상</span>' +
@@ -317,9 +330,8 @@
 
         /* 성경 66권 가운데 어디를 묵상했는가 */
         '<div class="bk-wrap">' +
-          '<p class="bk-title">성경 66권 묵상 자취</p>' +
-          (prog.unknown ? '<p class="help" style="margin:-8px 0 12px">본문 표기를 읽어 내지 못한 큐티 ' + prog.unknown + "편은 셈에서 뺐습니다.</p>" : "") +
-          qtBookTable(prog.books) +
+          (prog.unknown ? '<p class="help" style="margin:0 0 12px">본문 표기를 읽어 내지 못한 큐티 ' + prog.unknown + "편은 셈에서 뺐습니다.</p>" : "") +
+          foldBooks("qt-books", "성경 66권 묵상 자취", prog.books) +
         "</div>" +
       "</div>";
   }
@@ -340,15 +352,21 @@
   window.__mountQt = function (root) {
     mineEl = root;
     if (!mineEl) return;
-    mineEl.innerHTML = '<div class="fin-card"><p class="qt-loading">큐티 기록을 불러오는 중…</p></div>';
+    mineEl.innerHTML = '<div class="fin-card qt-mine"><p class="qt-loading">큐티 기록을 불러오는 중…</p></div>';
     Promise.all([
       rpc("my_faith_summary", { p_plan_year: null }),
       rpc("my_qt_history").catch(function () { return []; })
     ]).then(function (r) {
       drawMine(r[0] || {}, r[1] || []);
     }).catch(function (e) {
-      mineEl.innerHTML = '<div class="fin-card"><h3 class="sub-title">큐티</h3><p class="help">' +
-        esc(e.message) + "</p></div>";
+      /* 서버가 돌려준 말이 사람 말이 아닐 때가 있다(JSON 덩어리).
+         상자는 큐티 상자 그대로 두고, 안에는 읽을 수 있는 한 줄만 남긴다. */
+      var msg = String((e && e.message) || "");
+      if (msg.charAt(0) === "{" || msg.indexOf("로그인") > -1) msg = "로그인하시면 묵상한 큐티가 여기 쌓입니다.";
+      mineEl.innerHTML = '<div class="fin-card qt-mine">' +
+          '<div class="rd-head"><h3 class="sub-title" style="margin:0">큐티</h3>' +
+          '<span class="rd-year">날마다 드리는 묵상</span></div>' +
+          '<p class="help">' + esc(msg) + "</p></div>";
     });
   };
 })();

@@ -476,3 +476,49 @@
     if (tb1) tb1.onclick = function () { showFlash("로그인 기능은 준비 중입니다."); };
   }
 })();
+
+/* ============================================================
+   접었다 펴는 상자
+   ------------------------------------------------------------
+   성경 66권 표처럼 길지만 늘 펴 놓을 필요는 없는 것들을 담습니다.
+   연 채로 두었는지 접어 두었는지는 이 브라우저에 남겨 두어,
+   다시 들어와도 지난번 보던 모습 그대로 열립니다.
+
+   쓰는 법:  window.foldBox("rd-books", "성경 66권 진도", "구약 0권", 안쪽HTML)
+   (제목과 요약은 그대로 넣으므로, 사람이 쓴 글이면 미리 escape 해서 주세요)
+   ============================================================ */
+(function () {
+  var KEY = "bansuk.fold.";
+  function saved(k) { try { return localStorage.getItem(KEY + k); } catch (e) { return null; } }
+
+  /* 기본은 접힘. 한 번이라도 편 적이 있으면 그 상태를 따릅니다 */
+  window.foldBox = function (key, title, summary, inner) {
+    var on = saved(key) === "1";
+    return '<div class="fold' + (on ? " on" : "") + '" data-fold="' + key + '">' +
+        '<button type="button" class="fold-head" aria-expanded="' + (on ? "true" : "false") + '">' +
+          '<span class="fold-title">' + title + "</span>" +
+          (summary ? '<span class="fold-sum">' + summary + "</span>" : "") +
+          '<span class="fold-caret" aria-hidden="true"></span>' +
+        "</button>" +
+        '<div class="fold-body"' + (on ? "" : " hidden") + ">" + inner + "</div>" +
+      "</div>";
+  };
+
+  document.addEventListener("click", function (e) {
+    var el = e.target, head = null;
+    while (el && el !== document) {
+      if (el.className && String(el.className).indexOf("fold-head") > -1) { head = el; break; }
+      el = el.parentNode;
+    }
+    if (!head) return;
+    var box = head.parentNode;
+    var body = box.querySelector(".fold-body");
+    if (!body) return;
+    var on = !body.hidden ? false : true;
+    body.hidden = !on;
+    if (on) box.className += " on"; else box.className = box.className.replace(/\s*\bon\b/, "");
+    head.setAttribute("aria-expanded", on ? "true" : "false");
+    try { localStorage.setItem(KEY + box.getAttribute("data-fold"), on ? "1" : "0"); } catch (err) {}
+  });
+})();
+

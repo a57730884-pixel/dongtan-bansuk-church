@@ -280,10 +280,10 @@
         '<div class="rd-player" id="rdPlayer"' + (state.audio ? "" : " hidden") + "></div>" +
         '<div class="rd-text" id="rdText"' + (state.open ? "" : " hidden") + "></div>" +
 
-        /* 66권 — 어느 책을 얼마나 읽었는지 한눈에 */
+        /* 66권 — 어느 책을 얼마나 읽었는지 한눈에.
+           표는 길어서 접어 둘 수 있게 했습니다. 고른 책의 설명은 접어도 남습니다. */
         '<div class="bk-wrap" id="bkWrap">' +
-          '<p class="bk-title">성경 66권 진도</p>' +
-          bookTable(books) +
+          foldBooks("rd-books", "성경 66권 진도", books, "권 마침") +
           bookDetail(picked, books) +
         "</div>" +
       "</div>";
@@ -338,6 +338,19 @@
       for (var c = 1; c <= b.c; c++) { if (m[c]) got++; else rest.push(c); }
       return { a: b.a, n: b.n, c: b.c, t: b.t, got: got, rest: rest };
     });
+  }
+
+  /* 표 머리에 붙일 한 줄 요약 — 접혀 있을 때도 얼마나 왔는지는 보이게 */
+  function foldBooks(key, title, list, unit) {
+    function n(t) {
+      var part = list.filter(function (b) { return b.t === t; });
+      return part.filter(function (b) { return b.got >= b.c; }).length + "/" + part.length;
+    }
+    var sum = '<em class="fs-ot">구약 ' + n(0) + "</em><em class=\"fs-nt\">신약 " + n(1) + "</em>" +
+      '<em class="fs-unit">' + unit + "</em>";
+    return window.foldBox
+      ? window.foldBox(key, title, sum, bookTable(list))
+      : '<p class="bk-title">' + title + "</p>" + bookTable(list);
   }
 
   function bookTable(list) {

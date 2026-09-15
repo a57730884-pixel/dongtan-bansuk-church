@@ -862,6 +862,55 @@ body.menu-lock{overflow:hidden}
 .rp-speaking{margin:0;font-size:.92rem;color:var(--accent)}
 
 /* 66권 진도표 — 어느 책을 얼마나 읽었는지 한눈에 */
+/* ============ 나의 신앙생활 — 두 상자를 색으로 가른다 ============
+   큐티는 날마다 드리는 묵상(황토), 성경 읽기는 한 해를 걷는 말씀(청람).
+   두 상자에 같은 66권 표가 들어가 있어, 색이 아니면 어느 쪽인지 바로 알기 어렵다.
+   표 안의 파랑·빨강은 그대로 구약·신약을 가리킨다(상자 색과는 다른 뜻). */
+.fin-card.qt-mine,.fin-card.rd-card{border-top-width:3px}
+.fin-card.qt-mine{border-top-color:#c2762a;background:linear-gradient(#fffaf1,#fff 160px)}
+.fin-card.rd-card{border-top-color:#1d6fb8;background:linear-gradient(#f4faff,#fff 160px)}
+.qt-mine>.rd-head .sub-title,.rd-card>.rd-head .sub-title{display:flex;align-items:center;gap:9px}
+.qt-mine>.rd-head .sub-title::before,.rd-card>.rd-head .sub-title::before{
+  content:"";width:6px;height:1.05em;border-radius:2px;flex:0 0 auto;
+}
+.qt-mine>.rd-head .sub-title{color:#96570f}
+.qt-mine>.rd-head .sub-title::before{background:#c2762a}
+.rd-card>.rd-head .sub-title{color:#15568e}
+.rd-card>.rd-head .sub-title::before{background:#1d6fb8}
+.qt-mine .qt-stat{background:#fdf5ea}
+.qt-mine .qt-stat b{color:#a8630f}
+.qt-mine .qt-cell.on{background:#c2762a}
+.qt-mine .bk-wrap{border-top-color:#f0dfc7}
+.rd-card .bk-wrap{border-top-color:#d9e8f5}
+
+/* ============ 접었다 펴는 상자 ============
+   머리를 누르면 열리고 닫힌다. 접혀 있어도 어디까지 왔는지는 머리에 적어 둔다. */
+.fold-head{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:11px 13px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--gray);color:var(--ink);font:inherit;font-size:.95rem;font-weight:700;
+  text-align:left;cursor:pointer;transition:background .15s,border-color .15s;
+}
+.fold-head:hover{background:#eef1f5}
+.fold-head:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fold-title{flex:0 0 auto}
+.fold-sum{display:flex;gap:9px;align-items:baseline;margin-left:auto;font-weight:400;font-size:.82rem}
+.fold-sum em{font-style:normal;white-space:nowrap}
+.fs-ot{color:#1d6fb8}
+.fs-nt{color:#b5352c}
+.fs-unit{color:var(--muted)}
+.fold-caret{
+  flex:0 0 auto;width:8px;height:8px;margin:0 2px 3px 0;
+  border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+  transform:rotate(45deg);transition:transform .18s;
+}
+.fold.on .fold-caret{transform:rotate(-135deg);margin-bottom:-3px}
+.fold-body{padding-top:14px}
+.qt-mine .fold-head{background:#fdf5ea;border-color:#f0dfc7;color:#7d4a0d}
+.qt-mine .fold-head:hover{background:#faeeda}
+.rd-card .fold-head{background:#f0f7fd;border-color:#d9e8f5;color:#144f83}
+.rd-card .fold-head:hover{background:#e5f0fa}
+
 .bk-wrap{margin-top:24px;border-top:1px solid var(--line);padding-top:20px}
 .bk-title{margin:0 0 14px;font-size:.95rem;font-weight:700;color:var(--ink)}
 .bk-sec{margin-bottom:18px}
@@ -916,6 +965,9 @@ body.menu-lock{overflow:hidden}
 .bk-meta{padding-top:10px;border-top:1px solid rgba(15,123,181,.16);font-size:.88rem}
 
 @media (max-width:600px){
+  .fold-head{flex-wrap:wrap;gap:6px 10px;font-size:.9rem}
+  .fold-sum{order:3;width:100%;margin-left:0;font-size:.78rem}
+  .fold-caret{margin-left:auto}
   .bk-grid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px}
   .bk-name{font-size:.8rem}
 }
