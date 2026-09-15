@@ -18,6 +18,7 @@
     { href: "word.html", label: "말씀", sub: [
       { href: "word.html#this", label: "이번 주 설교" },
       { href: "word.html#archive", label: "설교 아카이브" },
+      { href: "qt.html", label: "큐티" },
       { href: "word.html#bulletin", label: "주보" }
     ] },
     { href: "praise.html", label: "찬양", sub: [

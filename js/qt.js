@@ -62,6 +62,40 @@
     });
   }
 
+  /* 지난 큐티 찾기.
+     PostgREST 의 or=(...) 안에서는 쉼표와 괄호가 조건을 가르는 글자이므로,
+     찾는 말에 섞여 들어오면 질의가 깨진다. 그래서 검색어에서는 그런 글자와
+     LIKE 의 자리표(% _ *)를 미리 떼어 낸다. 사람은 보통 낱말로 찾는다. */
+  function safeQ(q) {
+    return String(q || "").replace(/[,()"'*%_\\.]/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function searchQt(opt) {
+    opt = opt || {};
+    var base = String(SRC.url).replace(/\/$/, "");
+    var url = base + "/rest/v1/" + (SRC.table || "qt_published") +
+      "?select=" + COLS + "&order=sermon_date.desc" +
+      "&limit=" + (opt.limit || 12) + "&offset=" + (opt.offset || 0);
+    var q = safeQ(opt.q);
+    if (q) {
+      var like = "*" + q + "*";
+      var conds = ["title.ilike." + encodeURIComponent(like),
+                   "scripture.ilike." + encodeURIComponent(like)];
+      if (opt.deep) conds.push("content.ilike." + encodeURIComponent(like));
+      url += "&or=(" + conds.join(",") + ")";
+    }
+    if (opt.from) url += "&sermon_date=gte." + opt.from;
+    if (opt.to) url += "&sermon_date=lte." + opt.to;
+    return fetch(url, { headers: { apikey: SRC.key, Prefer: "count=exact" } }).then(function (r) {
+      if (!r.ok) throw new Error("지난 큐티를 불러오지 못했습니다.");
+      // Content-Range: 0-11/368 — 끝의 수가 전체 건수다
+      var cr = r.headers.get("content-range") || "";
+      var total = parseInt(String(cr).split("/")[1], 10);
+      return r.json().then(function (rows) {
+        return { rows: rows || [], total: isNaN(total) ? null : total };
+      });
+    });
+  }
+
   /* ── 우리 집 데이터베이스 (아멘 기록) ── */
   function token() {
     if (window.__sbToken) return window.__sbToken;
@@ -106,37 +140,152 @@
         '<div class="qt-acts">' +
           '<button type="button" class="btn btn-solid" id="qtOpen">큐티 전문 보기</button>' +
           '<button type="button" class="btn btn-line" id="qtListen">🔊 음성으로 듣기</button>' +
+          '<a class="qt-past" href="qt.html#archive">지난 큐티 찾아보기</a>' +
         "</div>" +
         '<div class="qt-player" id="qtPlayer" hidden></div>' +
         '<p class="rp-note" id="qtPlayNote" hidden></p>' +
         '<div id="qtAmen"></div>' +
       "</div>";
-    document.getElementById("qtOpen").onclick = openModal;
+    // 클릭 이벤트가 그대로 넘어가면 그것을 큐티로 알아듣는다. 오늘 것을 또렷이 건넨다.
+    document.getElementById("qtOpen").onclick = function () { openModal(today); };
     bindListen();
     drawAmen();
   }
 
-  function openModal() {
+  function openModal(row) {
+    row = row || today;
+    if (!row) return;
     var m = document.createElement("div");
     m.className = "modal qt-modal";
     m.innerHTML =
       '<div class="modal-backdrop" data-x></div>' +
       '<div class="modal-box qt-box" role="dialog" aria-modal="true">' +
         '<button class="modal-close" data-x aria-label="닫기">&times;</button>' +
-        '<p class="qt-eyebrow">' + esc(ymd(today.sermon_date)) + " 큐티</p>" +
-        "<h3>" + esc(today.title || "") + "</h3>" +
-        (today.scripture ? '<p class="qt-ref">' + esc(today.scripture) + "</p>" : "") +
-        (today.qt_bible_text ? '<div class="qt-bible">' + esc(today.qt_bible_text).replace(/\n/g, "<br />") + "</div>" : "") +
-        '<div class="qt-body">' + clean(today.content || "") + "</div>" +
-        (today.prayer ? '<div class="qt-prayer"><p class="qt-prayer-label">기도</p>' +
-            esc(today.prayer).replace(/\n/g, "<br />") + "</div>" : "") +
+        '<p class="qt-eyebrow">' + esc(ymd(row.sermon_date)) + " 큐티</p>" +
+        "<h3>" + esc(row.title || "") + "</h3>" +
+        (row.scripture ? '<p class="qt-ref">' + esc(row.scripture) + "</p>" : "") +
+        (window.QT_AUDIO ? '<p class="qt-modal-acts"><button type="button" class="btn btn-line" data-listen>🔊 음성으로 듣기</button></p>' +
+            '<div class="qt-player" data-player hidden></div><p class="rp-note" data-note hidden></p>' : "") +
+        (row.qt_bible_text ? '<div class="qt-bible">' + esc(row.qt_bible_text).replace(/\n/g, "<br />") + "</div>" : "") +
+        '<div class="qt-body">' + clean(row.content || "") + "</div>" +
+        (row.prayer ? '<div class="qt-prayer"><p class="qt-prayer-label">기도</p>' +
+            esc(row.prayer).replace(/\n/g, "<br />") + "</div>" : "") +
       "</div>";
     document.body.appendChild(m);
     document.body.style.overflow = "hidden";
     Array.prototype.forEach.call(m.querySelectorAll("[data-x]"), function (el) {
-      el.addEventListener("click", function () { m.remove(); document.body.style.overflow = ""; });
+      el.addEventListener("click", function () { close(); });
+    });
+    function close() {
+      if (window.QT_AUDIO && mOn) window.QT_AUDIO.stop();
+      m.remove();
+      document.body.style.overflow = "";
+    }
+
+    /* 창 안에서도 들을 수 있게. 창을 닫으면 소리도 함께 멈춘다 */
+    var mOn = false, mBtn = m.querySelector("[data-listen]");
+    if (mBtn) mBtn.addEventListener("click", function () {
+      var box = m.querySelector("[data-player]"), note = m.querySelector("[data-note]");
+      if (mOn) {
+        window.QT_AUDIO.stop(); mOn = false;
+        box.hidden = true; note.hidden = true; box.innerHTML = "";
+        mBtn.textContent = "🔊 음성으로 듣기";
+        return;
+      }
+      mOn = true;
+      mBtn.textContent = "🔊 듣기 그만";
+      box.hidden = false;
+      window.QT_AUDIO.play(box, row, function (msg) {
+        note.hidden = !msg;
+        if (msg) note.textContent = msg;
+      });
     });
   }
+
+  /* ── 지난 큐티 찾아보기 (qt.html) ── */
+  window.__mountQtList = function (root) {
+    root = root || document.getElementById("qtList");
+    if (!root) return;
+    var PER = 12;
+    var st = { q: "", from: "", to: "", deep: false, offset: 0, rows: [], total: null };
+
+    root.innerHTML =
+      '<form class="qa-form" id="qaForm">' +
+        '<input type="search" id="qaQ" class="qa-q" placeholder="제목 · 성경 본문 · 큐티 글 속의 낱말" aria-label="지난 큐티 찾기" />' +
+        '<input type="date" id="qaFrom" class="qa-date" aria-label="이 날부터" />' +
+        '<span class="qa-tilde">~</span>' +
+        '<input type="date" id="qaTo" class="qa-date" aria-label="이 날까지" />' +
+        '<button type="submit" class="btn btn-solid">찾기</button>' +
+        '<button type="button" class="btn btn-line" id="qaReset">처음으로</button>' +
+        '<label class="qa-deep"><input type="checkbox" id="qaDeep" /> 큐티 글 속까지 찾기</label>' +
+      "</form>" +
+      '<p class="qa-sum" id="qaSum"></p>' +
+      '<ul class="qa-list" id="qaList"></ul>' +
+      '<p class="qa-more"><button type="button" class="btn btn-line" id="qaMore" hidden>더 보기</button></p>';
+
+    var elList = root.querySelector("#qaList");
+    var elSum = root.querySelector("#qaSum");
+    var elMore = root.querySelector("#qaMore");
+
+    function row(r) {
+      return '<li class="qa-item"><button type="button" class="qa-btn" data-d="' + esc(r.sermon_date) + '">' +
+          '<span class="qa-date-txt">' + esc(ymd(r.sermon_date)) + "</span>" +
+          '<span class="qa-title">' + esc(r.title || "(제목 없음)") + "</span>" +
+          '<span class="qa-ref">' + esc(r.scripture || "") + "</span>" +
+        "</button></li>";
+    }
+
+    function draw() {
+      elList.innerHTML = st.rows.map(row).join("");
+      elMore.hidden = !(st.total != null && st.rows.length < st.total);
+      Array.prototype.forEach.call(elList.querySelectorAll(".qa-btn"), function (b) {
+        b.addEventListener("click", function () {
+          var d = b.getAttribute("data-d");
+          for (var i = 0; i < st.rows.length; i++) if (st.rows[i].sermon_date === d) return openModal(st.rows[i]);
+        });
+      });
+    }
+
+    function load(more) {
+      if (!more) { st.offset = 0; st.rows = []; elList.innerHTML = ""; }
+      elSum.textContent = "찾는 중…";
+      searchQt({ q: st.q, from: st.from, to: st.to, deep: st.deep, limit: PER, offset: st.offset }).then(function (res) {
+        st.rows = st.rows.concat(res.rows);
+        st.total = res.total;
+        st.offset += PER;
+        elSum.textContent = res.total === 0
+          ? (st.q ? "「" + safeQ(st.q) + "」로는 찾지 못했습니다." +
+              (st.deep ? " 다른 낱말로 찾아보세요." : " 「큐티 글 속까지 찾기」를 켜고 다시 찾아보세요.")
+                  : "아직 올라온 큐티가 없습니다.")
+          : (st.q || st.from || st.to ? "찾은 큐티 " : "지난 큐티 ") + res.total + "편 가운데 " + st.rows.length + "편";
+        draw();
+      }).catch(function (e) {
+        elSum.textContent = e.message || "불러오지 못했습니다.";
+        elMore.hidden = true;
+      });
+    }
+
+    root.querySelector("#qaForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      st.q = root.querySelector("#qaQ").value;
+      st.from = root.querySelector("#qaFrom").value;
+      st.to = root.querySelector("#qaTo").value;
+      st.deep = root.querySelector("#qaDeep").checked;
+      load(false);
+    });
+    root.querySelector("#qaReset").addEventListener("click", function () {
+      root.querySelector("#qaQ").value = "";
+      root.querySelector("#qaFrom").value = "";
+      root.querySelector("#qaTo").value = "";
+      root.querySelector("#qaDeep").checked = false;
+      st.q = st.from = st.to = "";
+      st.deep = false;
+      load(false);
+    });
+    elMore.addEventListener("click", function () { load(true); });
+
+    load(false);
+  };
 
   /* ── 음성으로 듣기 ── */
   var listening = false;
@@ -348,6 +497,8 @@
       homeEl.innerHTML = '<div class="qt-card"><p class="help">' + esc(e.message) + "</p></div>";
     });
   }
+
+  if (document.getElementById("qtList")) window.__mountQtList();
 
   window.__mountQt = function (root) {
     mineEl = root;

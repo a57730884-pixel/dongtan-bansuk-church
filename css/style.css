@@ -862,6 +862,59 @@ body.menu-lock{overflow:hidden}
 .rp-speaking{margin:0;font-size:.92rem;color:var(--accent)}
 
 /* 66권 진도표 — 어느 책을 얼마나 읽었는지 한눈에 */
+/* ============ 지난 큐티 찾아보기 (qt.html) ============
+   찾는 줄 한 벌과 목록 하나. 한 줄에 날짜·제목·본문을 나란히 두어
+   눈이 왼쪽 날짜를 훑다가 제목에서 멈추게 한다. */
+.qa-form{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin:0 0 18px;padding:14px;background:var(--gray);border:1px solid var(--line);border-radius:var(--radius);
+}
+.qa-q{
+  flex:1 1 260px;min-width:0;padding:10px 12px;font:inherit;font-size:.95rem;
+  border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);
+}
+.qa-date{
+  padding:9px 10px;font:inherit;font-size:.9rem;color:var(--body);
+  border:1px solid var(--line);border-radius:6px;background:#fff;
+}
+.qa-tilde{color:var(--muted)}
+.qa-form .btn{padding:10px 18px}
+.qa-deep{display:flex;align-items:center;gap:6px;flex:1 1 100%;font-size:.88rem;color:var(--body);cursor:pointer}
+.qa-deep input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.qa-sum{margin:0 0 12px;font-size:.9rem;color:var(--muted)}
+.qa-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.qa-item{border-bottom:1px solid var(--line)}
+.qa-btn{
+  display:flex;align-items:baseline;gap:14px;width:100%;
+  padding:14px 8px;border:0;background:none;font:inherit;text-align:left;cursor:pointer;
+  transition:background .14s;
+}
+.qa-btn:hover{background:var(--gray)}
+.qa-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.qa-date-txt{flex:0 0 auto;min-width:6.2em;font-size:.86rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.qa-title{flex:1 1 auto;min-width:0;color:var(--ink);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qa-ref{flex:0 0 auto;font-size:.84rem;color:var(--accent);white-space:nowrap}
+.qa-more{margin:20px 0 0;text-align:center}
+
+/* 첫 화면 큐티 카드에서 지난 큐티로 건너가는 길 */
+.qt-past{margin-left:auto;align-self:center;font-size:.9rem;color:var(--accent);white-space:nowrap}
+.qt-past:hover{text-decoration:underline}
+/* 전문 창 안에서도 들을 수 있게 */
+.qt-modal-acts{margin:14px 0 0}
+
+@media (max-width:600px){
+  .qa-form{gap:7px;padding:12px}
+  .qa-q{flex:1 1 100%}
+  /* 날짜 두 칸이 한 줄을 차지하게 두어야 "연.월.일" 이 잘리지 않는다.
+     40%씩 잡아 두면 단추는 저절로 다음 줄로 내려가 둘이 나란히 선다. */
+  .qa-date{flex:1 0 38%;min-width:0}
+  .qa-form .btn{flex:1 1 44%}
+  .qa-btn{flex-wrap:wrap;gap:4px 12px;padding:13px 6px}
+  .qa-title{flex:1 1 100%;order:2;white-space:normal}
+  .qa-ref{order:3}
+  .qt-past{margin-left:0;width:100%;text-align:center}
+}
+
 /* ============ 나의 신앙생활 — 두 상자를 색으로 가른다 ============
    큐티는 날마다 드리는 묵상(황토), 성경 읽기는 한 해를 걷는 말씀(청람).
    두 상자에 같은 66권 표가 들어가 있어, 색이 아니면 어느 쪽인지 바로 알기 어렵다.
