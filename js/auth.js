@@ -175,7 +175,11 @@
   /* ===== 헤더 로그인 상태 ===== */
   function renderAuth() {
     sb.auth.getSession().then(function (res) {
-      var user = res && res.data && res.data.session && res.data.session.user;
+      var sess = res && res.data && res.data.session;
+      var user = sess && sess.user;
+      // 갱신된 토큰을 레이아웃에 넘긴다 — 저장된 옛 토큰으로 권한을 물으면
+      // 만료된 뒤에는 메뉴가 열리지 않는다
+      if (sess && sess.access_token) window.__sbToken = sess.access_token;
       if (!slot) return;
       if (user && window.__drawLoggedIn) { window.__drawLoggedIn(user); return; }
       if (!user) {

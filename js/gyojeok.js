@@ -33,7 +33,18 @@ console.log('[gyojeok.js] v20260817gjdel');
       if (tries++ < 20) { setTimeout(boot, 400); return; }
       root.innerHTML = msgCard('로그인이 필요합니다', '상단에서 로그인 후 이용해 주세요.'); return;
     }
-    render();
+    // 교적은 최고관리자만 본다. 메뉴를 감추는 것만으로는 부족하다 —
+    // 주소창에 주소를 직접 쳐 넣고 들어오는 길도 여기서 막는다.
+    // (자료 자체는 데이터베이스의 접근 규칙이 이미 막고 있으나,
+    //  빈 표를 보여 주는 대신 왜 안 되는지 알려 주는 편이 낫다.)
+    root.innerHTML = '<p class="qt-loading">권한 확인 중입니다…</p>';
+    WPF.call('me').then(function (me) {
+      if (!me.isAdmin) {
+        root.innerHTML = msgCard('접근 권한이 없습니다', '교적관리는 최고관리자만 이용할 수 있습니다. 필요하시면 담임목사님께 말씀해 주세요.');
+        return;
+      }
+      render();
+    }).catch(function (e) { root.innerHTML = msgCard('확인 실패', e.message || '잠시 후 다시 시도해 주세요.'); });
   }
   function render() {
     root.innerHTML = '<div class="fin-tabs"><button data-t="access">권한 관리</button><button data-t="members">교적 명단</button><button data-t="family">가계도</button></div><div id="gjPanel"></div>';
@@ -45,14 +56,14 @@ console.log('[gyojeok.js] v20260817gjdel');
     if (tab === 'access') renderAccess(p); else if (tab === 'family') renderFamily(p); else renderMembers(p);
   }
 
-  /* ── 권한 관리: 정/준회원·교적연결 + 관리자/재정권한 ── */
+  /* ── 권한 관리: 정/준회원·교적연결 + 최고관리자/재정권한 ── */
   function renderAccess(panel) {
     loading(panel);
     Promise.all([WPF.call('listAccess'), WPF.call('listGyojeok')]).then(function (res) {
       var users = (res[0].users || []).sort(function (a, b) { return (b.isAdmin - a.isAdmin) || (b.canFinance - a.canFinance) || String(a.name).localeCompare(String(b.name), 'ko'); });
       var gj = tagRids((res[1].members || []).filter(function (m) { return m['이름']; }));
-      panel.innerHTML = '<div class="fin-card"><p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px">홈페이지에 가입한 회원입니다. <b>회원</b> 칸에서 정/준회원을 바꿀 수 있고, <b>정회원</b>으로 바꾸면 교적과 연결됩니다(헌금조회·가정합산 연동). <b>관리자</b>는 교적관리·전체 기능, <b>재정권한</b>은 재정관리에 접근합니다.</p>' +
-        '<div style="overflow:auto"><table class="fin-table"><thead><tr><th>이름</th><th>이메일</th><th>회원</th><th style="text-align:center">관리자</th><th style="text-align:center">재정권한</th></tr></thead><tbody>' +
+      panel.innerHTML = '<div class="fin-card"><p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px">홈페이지에 가입한 회원입니다. <b>회원</b> 칸에서 정/준회원을 바꿀 수 있고, <b>정회원</b>으로 바꾸면 교적과 연결됩니다(헌금조회·가정합산 연동). <b>최고관리자</b>는 교적관리와 재정관리를 모두 열 수 있고, <b>재정권한</b>만 드리면 그분의 머리말에 <b>재정관리</b> 메뉴 하나만 생깁니다. 체크를 풀면 곧바로 닫힙니다.</p>' +
+        '<div style="overflow:auto"><table class="fin-table"><thead><tr><th>이름</th><th>이메일</th><th>회원</th><th style="text-align:center">최고관리자</th><th style="text-align:center">재정권한</th></tr></thead><tbody>' +
         users.map(function (u) {
           return '<tr data-uid="' + esc(u.uid) + '"><td><b>' + esc(u.name || '(이름없음)') + '</b></td><td style="color:var(--ink-soft)">' + esc(u.email) + '</td>' +
             '<td><span class="st-pill" style="margin-right:8px;display:inline-block;min-width:48px">' + stPill(u.status) + '</span><select class="ck-status" style="padding:5px 8px;border:1px solid #cdd7e3;border-radius:7px;font:inherit;background:#fff">' +

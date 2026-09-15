@@ -30,9 +30,15 @@
       { href: "news.html#contact", label: "문의 · 새가족" }
     ] },
     { href: "mypage.html", label: "나의 기록", memberOnly: true },
+    /* 교회 행정 — 권한에 따라 보이는 것이 다르다.
+         최고관리자   교적관리 + 재정관리
+         재정권한자   재정관리 하나만 (메뉴 이름도 '재정관리' 로 바뀐다)
+         그 외        아예 없음
+       실제 차단은 화면이 아니라 데이터베이스의 접근 규칙(RLS)이 한다.
+       메뉴를 감추는 것은 헛걸음을 막기 위한 배려일 뿐이다. */
     { href: "gyojeok.html", label: "교회 행정", adminOnly: true, sub: [
-      { href: "gyojeok.html", label: "교적관리" },
-      { href: "finance.html", label: "재정관리" }
+      { href: "gyojeok.html", label: "교적관리", id: "navGyojeok" },
+      { href: "finance.html", label: "재정관리", id: "navFinance" }
     ] }
   ];
 
@@ -44,7 +50,9 @@
     var active = path === n.href.split("#")[0] ? ' class="active"' : "";
     var attr = n.adminOnly ? ' id="navAdmin" hidden' : (n.memberOnly ? ' id="navMember" hidden' : "");
     if (!n.sub) return '<div class="nav-item"' + attr + '><a href="' + n.href + '"' + active + ">" + n.label + "</a></div>";
-    var subs = n.sub.map(function (s) { return '<a href="' + s.href + '">' + s.label + "</a>"; }).join("");
+    var subs = n.sub.map(function (s) {
+      return '<a href="' + s.href + '"' + (s.id ? ' id="' + s.id + '"' : "") + ">" + s.label + "</a>";
+    }).join("");
     return '<div class="nav-item has-sub"' + attr + '>' +
       '<a href="' + n.href + '"' + active + ">" + n.label + '<span class="nav-caret" aria-hidden="true">⌄</span></a>' +
       '<div class="nav-dropdown"><div class="nav-dropdown-inner">' + subs + "</div></div></div>";
@@ -330,33 +338,67 @@
       nameEl.insertAdjacentElement("afterend", b);
     }
 
+    /* 권한에 따라 '교회 행정' 메뉴를 세운다.
+       최고관리자면 교적·재정 둘 다, 재정권한만 있으면 재정 하나만 보인다. */
+    function applyAdminNav(isAdmin, canFinance) {
+      var parent = document.getElementById("navAdmin");
+      if (!parent) return;
+      var top = parent.querySelector("a");
+      var gy = document.getElementById("navGyojeok");
+      var fi = document.getElementById("navFinance");
+      var drop = parent.querySelector(".nav-dropdown");
+
+      if (!isAdmin && !canFinance) { parent.hidden = true; return; }
+      parent.hidden = false;
+
+      if (isAdmin) {
+        if (gy) gy.hidden = false;
+        if (fi) fi.hidden = false;
+        if (drop) drop.hidden = false;
+        parent.classList.add("has-sub");
+        if (top) { top.href = "gyojeok.html"; top.innerHTML = '교회 행정<span class="nav-caret" aria-hidden="true">⌄</span>'; }
+      } else {
+        // 재정권한만 받은 분 — 교적은 열리지 않으므로 메뉴에서 지우고 이름도 바꾼다
+        if (gy) gy.hidden = true;
+        if (fi) fi.hidden = false;
+        if (drop) drop.hidden = true;
+        parent.classList.remove("has-sub");
+        if (top) { top.href = "finance.html"; top.textContent = "재정관리"; }
+      }
+    }
+
     function revealMenus(uid) {
       if (!uid) return;
       var h = { apikey: window.SUPABASE_ANON_KEY };
-      if (cachedToken) h.Authorization = "Bearer " + cachedToken;
-      fetch(window.SUPABASE_URL + "/rest/v1/admins?uid=eq." + uid + "&select=uid", { headers: h })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (rows) {
-          if (!rows || !rows.length) return;
-          var el = document.getElementById("navAdmin");
-          if (el) el.hidden = false;
-          markAdmin();
-        })
-        .catch(function () {});
-      fetch(window.SUPABASE_URL + "/rest/v1/member_links?user_id=eq." + uid + "&select=member_status", { headers: h })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function () { var el = document.getElementById("navMember"); if (el) el.hidden = false; })
-        .catch(function () {});
+      var tok = window.__sbToken || cachedToken;   // 갱신된 토큰이 있으면 그것을 쓴다
+      if (tok) h.Authorization = "Bearer " + tok;
+      var get = function (path) {
+        return fetch(window.SUPABASE_URL + "/rest/v1/" + path, { headers: h })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; });
+      };
+
+      // 두 질문을 함께 묻고 한 번에 결정한다 — 메뉴가 두 번 깜빡이지 않도록
+      Promise.all([
+        get("admins?uid=eq." + uid + "&select=uid"),
+        get("member_links?user_id=eq." + uid + "&select=can_finance")
+      ]).then(function (res) {
+        var isAdmin = !!(res[0] && res[0].length);
+        var canFinance = !!(res[1] && res[1][0] && res[1][0].can_finance);
+        applyAdminNav(isAdmin, canFinance);
+        if (isAdmin) markAdmin();
+      });
+
+      var el = document.getElementById("navMember");
+      if (el) el.hidden = false;   // 나의 기록 — 로그인한 분이면 누구나(교적 인증도 여기서 한다)
+
       // 직분(집사·권사·장로·담임목사)이 교적에 등록돼 있으면 머리말의 호칭을 그것으로 바꾼다
-      fetch(window.SUPABASE_URL + "/rest/v1/profiles?id=eq." + uid + "&select=name,role", { headers: h })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (rows) {
-          var p = rows && rows[0];
-          if (!p || !p.role) return;
-          var el = document.querySelector(".auth-name");
-          if (el) el.innerHTML = withTitle(p.name || "", p.role);
-        })
-        .catch(function () {});
+      get("profiles?id=eq." + uid + "&select=name,role").then(function (rows) {
+        var p = rows && rows[0];
+        if (!p || !p.role) return;
+        var n = document.querySelector(".auth-name");
+        if (n) n.innerHTML = withTitle(p.name || "", p.role);
+      });
     }
     window.__revealMenus = revealMenus;
 
@@ -408,7 +450,7 @@
     sdk.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
     sdk.onload = function () {
       var a = document.createElement("script");
-      a.src = "js/auth.js?v=6";
+      a.src = "js/auth.js?v=7";
       document.body.appendChild(a);
     };
     document.head.appendChild(sdk);
