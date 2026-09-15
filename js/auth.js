@@ -272,7 +272,10 @@
       var email = (input.value || "").trim();
       if (!email) { showMsg("가입하신 이메일을 위 칸에 먼저 입력해 주세요.", false); input.focus(); return; }
       forgot.disabled = true;
-      sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + "/reset.html" })
+      // GitHub Pages 는 /저장소이름/ 아래에 놓이므로 origin 에 붙이면 주소가 어긋난다.
+      // 지금 보고 있는 주소를 기준으로 reset.html 을 찾는다.
+      var resetUrl = new URL("reset.html", location.href).href;
+      sb.auth.resetPasswordForEmail(email, { redirectTo: resetUrl })
         .then(function (r) {
           if (r.error) throw r.error;
           showMsg("비밀번호 재설정 메일을 보냈습니다. 몇 분 안에 오지 않으면 스팸함을 확인해 주세요.", true);
