@@ -85,7 +85,7 @@
   }
 
   /* ── 화면 ── */
-  var state = { day: todayDay(), done: [], open: false, member: false };
+  var state = { day: todayDay(), done: [], open: false, member: false, book: null };
 
   function isDone(d) { return state.done.indexOf(d) >= 0; }
   function pct() { return Math.round(state.done.length / 365 * 1000) / 10; }
@@ -95,6 +95,10 @@
     var theme = PLAN.themes[day.t] || "";
     var today = todayDay();
     var behind = today - state.done.length;
+    var books = bookProgress();
+    var picked = state.book ? books.filter(function (b) { return b.a === state.book; })[0] : null;
+    var chRead = books.reduce(function (n, b) { return n + b.got; }, 0);
+    var bkDone = books.filter(function (b) { return b.got >= b.c; }).length;
 
     root.innerHTML =
       '<div class="fin-card rd-card">' +
@@ -104,8 +108,9 @@
         "</div>" +
 
         /* 진행률 */
-        '<div class="rd-bar"><span style="width:' + pct() + '%"></span></div>' +
-        '<p class="rd-sum"><b>' + state.done.length + "</b>일 읽음 · 365일 중 <b>" + pct() + "%</b>" +
+        '<div class="rd-bar"><span style="width:' + (chRead / TOTAL_CH * 100) + '%"></span></div>' +
+        '<p class="rd-sum"><b>' + chRead + "</b>장 읽음 · 전체 " + TOTAL_CH + "장 중 <b>" +
+            (Math.round(chRead / TOTAL_CH * 1000) / 10) + "%</b> · <b>" + bkDone + "</b>권 마침" +
           (state.member ? (behind > 0 ? ' · <span class="rd-behind">' + behind + "일 밀렸습니다</span>"
                                       : ' · <span class="rd-ok">잘 따라오고 계십니다</span>') : "") +
         "</p>" +
@@ -134,22 +139,110 @@
         '<p class="auth-msg" id="rdMsg" hidden></p>' +
         '<div class="rd-text" id="rdText"' + (state.open ? "" : " hidden") + "></div>" +
 
-        /* 365칸 — 한 해가 한눈에 */
-        '<div class="rd-grid" id="rdGrid">' + gridHTML(today) + "</div>" +
+        /* 66권 — 어느 책을 얼마나 읽었는지 한눈에 */
+        '<div class="bk-wrap" id="bkWrap">' +
+          '<p class="bk-title">성경 66권 진도</p>' +
+          bookTable(books) +
+          bookDetail(picked, books) +
+        "</div>" +
       "</div>";
 
     bind(root);
     if (state.open) fillText(root);
   }
 
-  function gridHTML(today) {
-    var out = "";
-    for (var d = 1; d <= 365; d++) {
-      var cls = isDone(d) ? "on" : (d === today ? "today" : (d < today ? "miss" : ""));
-      out += '<button type="button" class="rd-cell ' + cls + '" data-d="' + d + '" title="' +
-        d + '일째 · ' + esc(PLAN.days[d - 1].r) + '"></button>';
+  /* ── 권별 진도 ──────────────────────────────────────────
+     읽기표의 하루는 "어느 책 몇 장부터 몇 장까지" 를 가리킨다.
+     그러므로 읽은 날들을 모으면 어느 책 몇 장을 읽었는지가 저절로 나온다.
+     장을 따로 기록할 필요가 없다. ─────────────────────── */
+  var BOOKS = window.BIBLE_BOOKS || [];
+  var TOTAL_CH = BOOKS.reduce(function (s, b) { return s + b.c; }, 0);
+
+  // 책+장 → 그 장을 읽는 날이 며칠째인가 (한 번만 만들어 둔다)
+  var dayOfChapter = (function () {
+    var m = {};
+    PLAN.days.forEach(function (day) {
+      (day.refs || []).forEach(function (r) {
+        for (var c = r[1]; c <= r[2]; c++) {
+          var k = r[0] + "|" + c;
+          if (m[k] == null) m[k] = day.d;
+        }
+      });
+    });
+    return m;
+  })();
+
+  // 읽은 날들로부터 책별로 읽은 장을 센다
+  function bookProgress() {
+    var read = {};   // 약어 → { 장번호: true }
+    state.done.forEach(function (d) {
+      var day = PLAN.days[d - 1];
+      if (!day) return;
+      (day.refs || []).forEach(function (r) {
+        var m = read[r[0]] || (read[r[0]] = {});
+        for (var c = r[1]; c <= r[2]; c++) m[c] = true;
+      });
+    });
+    return BOOKS.map(function (b) {
+      var m = read[b.a] || {};
+      var got = 0, rest = [];
+      for (var c = 1; c <= b.c; c++) { if (m[c]) got++; else rest.push(c); }
+      return { a: b.a, n: b.n, c: b.c, t: b.t, got: got, rest: rest };
+    });
+  }
+
+  function bookTable(list) {
+    function section(title, t) {
+      var part = list.filter(function (b) { return b.t === t; });
+      var done = part.filter(function (b) { return b.got >= b.c; }).length;
+      return '<div class="bk-sec"><p class="bk-sec-head">' + title +
+          ' <em>' + part.length + '권 중 ' + done + '권 마침</em></p>' +
+        '<div class="bk-grid">' + part.map(function (b) {
+          var p = Math.round(b.got / b.c * 100);
+          var cls = b.got >= b.c ? "full" : (b.got ? "part" : "");
+          return '<button type="button" class="bk ' + cls + '" data-a="' + esc(b.a) + '">' +
+              '<span class="bk-name">' + esc(b.n) + (b.got >= b.c ? " ✓" : "") + "</span>" +
+              '<span class="bk-num">' + b.got + "/" + b.c + "</span>" +
+              '<span class="bk-bar"><i style="width:' + p + '%"></i></span>' +
+            "</button>";
+        }).join("") + "</div></div>";
     }
-    return out;
+    return section("구약", 0) + section("신약", 1);
+  }
+
+  // 책 하나를 누르면 — 얼마나 읽었고 몇 장이 남았는지, 남은 곳이 며칠째인지
+  function bookDetail(b, list) {
+    if (!b) return "";
+    var leftBooks = list.filter(function (x) { return x.got < x.c; }).length;
+    var days = {};
+    b.rest.forEach(function (c) { var d = dayOfChapter[b.a + "|" + c]; if (d) days[d] = true; });
+    var dayList = Object.keys(days).map(Number).sort(function (x, y) { return x - y; });
+    var first = dayList[0];
+
+    return '<div class="bk-detail">' +
+      '<div class="bk-detail-head">' +
+        "<h4>" + esc(b.n) + "</h4>" +
+        '<button type="button" class="bk-close" id="bkClose" aria-label="닫기">&times;</button>' +
+      "</div>" +
+      (b.got >= b.c
+        ? '<p class="bk-done">' + esc(b.n) + " " + b.c + "장을 <b>모두 읽으셨습니다.</b></p>"
+        : '<p class="bk-left">' + b.c + "장 가운데 <b>" + b.got + "장</b>을 읽으시고 <b>" + b.rest.length + "장</b>이 남았습니다." +
+          (b.rest.length ? ' <span class="bk-rest">남은 곳 · ' + rangeText(b.rest) + "장</span>" : "") + "</p>") +
+      '<p class="bk-meta">성경 66권 가운데 <b>' + leftBooks + "권</b>이 남았습니다." +
+        (first ? ' 다음 차례는 읽기표 <b>' + first + '일째</b>입니다. <button type="button" class="rd-today" id="bkGo" data-d="' + first + '">그 날로 가기</button>' : "") +
+      "</p></div>";
+  }
+
+  // 1,2,3,7,8 → "1~3, 7~8"
+  function rangeText(arr) {
+    var out = [], s = null, p = null;
+    arr.forEach(function (n) {
+      if (s === null) { s = p = n; return; }
+      if (n === p + 1) { p = n; return; }
+      out.push(s === p ? s : s + "~" + p); s = p = n;
+    });
+    if (s !== null) out.push(s === p ? s : s + "~" + p);
+    return out.slice(0, 12).join(", ") + (out.length > 12 ? " …" : "");
   }
 
   function bind(root) {
@@ -175,9 +268,26 @@
         .catch(function (e) { show(e.message, false); btn.disabled = false; });
     };
 
-    Array.prototype.forEach.call(root.querySelectorAll(".rd-cell"), function (c) {
-      c.onclick = function () { state.day = +c.getAttribute("data-d"); state.open = false; render(root); };
+    // 권별 진도표 — 책을 누르면 아래에 남은 장이 펼쳐진다
+    Array.prototype.forEach.call(root.querySelectorAll(".bk"), function (b) {
+      b.onclick = function () {
+        var a = b.getAttribute("data-a");
+        state.book = (state.book === a) ? null : a;
+        render(root);
+        var d = root.querySelector(".bk-detail");
+        if (d) d.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      };
     });
+    var bkClose = root.querySelector("#bkClose");
+    if (bkClose) bkClose.onclick = function () { state.book = null; render(root); };
+    var bkGo = root.querySelector("#bkGo");
+    if (bkGo) bkGo.onclick = function () {
+      state.day = +bkGo.getAttribute("data-d");
+      state.open = false;
+      render(root);
+      var t = root.querySelector(".rd-day");
+      if (t) t.scrollIntoView({ block: "center", behavior: "smooth" });
+    };
   }
 
   function fillText(root) {

@@ -717,18 +717,45 @@ body.menu-lock{overflow:hidden}
 .rd-verses li::marker{color:var(--muted);font-size:.8em}
 .rd-err{color:#c0392b;margin:0}
 
-/* 365칸 — 한 해가 한눈에 */
-.rd-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(11px,1fr));gap:3px;margin-top:22px;
+/* 66권 진도표 — 어느 책을 얼마나 읽었는지 한눈에 */
+.bk-wrap{margin-top:24px;border-top:1px solid var(--line);padding-top:20px}
+.bk-title{margin:0 0 14px;font-size:.95rem;font-weight:700;color:var(--ink)}
+.bk-sec{margin-bottom:18px}
+.bk-sec-head{margin:0 0 8px;font-size:.86rem;font-weight:700;color:var(--nav)}
+.bk-sec-head em{font-style:normal;font-weight:400;color:var(--muted);margin-left:6px;font-size:.94em}
+.bk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.bk{
+  display:flex;flex-direction:column;gap:4px;text-align:left;
+  border:1px solid var(--line);border-radius:6px;background:#fff;
+  padding:8px 9px 9px;cursor:pointer;font-family:inherit;transition:.14s;
 }
-.rd-cell{
-  aspect-ratio:1;border:0;border-radius:2px;background:var(--gray);cursor:pointer;padding:0;
-  transition:transform .1s;
+.bk:hover{border-color:var(--accent)}
+.bk-name{font-size:.84rem;color:var(--ink);font-weight:500;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-num{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.bk-bar{display:block;height:4px;border-radius:999px;background:var(--gray);overflow:hidden}
+.bk-bar>i{display:block;height:100%;border-radius:999px;background:var(--brand-blue)}
+.bk.part{border-color:#cfe3f2;background:#f7fbfe}
+.bk.part .bk-bar>i{background:var(--accent)}
+.bk.full{border-color:rgba(30,135,75,.42);background:#f2faf5}
+.bk.full .bk-name{color:#1e874b;font-weight:700}
+.bk.full .bk-bar>i{background:#1e874b}
+
+.bk-detail{
+  margin-top:14px;background:var(--soft);border-radius:var(--radius);padding:16px 18px;
 }
-.rd-cell:hover{transform:scale(1.35)}
-.rd-cell.on{background:var(--accent)}
-.rd-cell.miss{background:#e6d7d4}
-.rd-cell.today{background:var(--brand-green);box-shadow:0 0 0 2px rgba(141,206,10,.35)}
+.bk-detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bk-detail-head h4{margin:0;font-size:1.06rem;color:var(--ink)}
+.bk-close{border:0;background:none;font-size:1.5rem;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px}
+.bk-close:hover{color:var(--ink)}
+.bk-left,.bk-done,.bk-meta{margin:10px 0 0;font-size:.92rem;color:var(--body);line-height:1.65}
+.bk-done{color:#1e874b}
+.bk-rest{display:block;margin-top:4px;font-size:.86rem;color:var(--muted)}
+.bk-meta{padding-top:10px;border-top:1px solid rgba(15,123,181,.16);font-size:.88rem}
+
+@media (max-width:600px){
+  .bk-grid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px}
+  .bk-name{font-size:.8rem}
+}
 
 /* ============ 목회 행정 대시보드 ============ */
 .care-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
@@ -775,7 +802,6 @@ body.menu-lock{overflow:hidden}
 @media (max-width:600px){
   .rd-actions .btn{flex:1 1 100%;text-align:center}
   .rd-text{padding:16px 14px;max-height:none}
-  .rd-grid{grid-template-columns:repeat(auto-fill,minmax(9px,1fr))}
   .ct-value{font-size:1.6rem}
 }
 
