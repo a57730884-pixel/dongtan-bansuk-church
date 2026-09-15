@@ -765,6 +765,12 @@ body.menu-lock{overflow:hidden}
 }
 .qt-prayer-label{margin:0 0 8px;font-size:.8rem;font-weight:700;letter-spacing:.1em;color:var(--accent)}
 
+.qt-player{margin-top:16px}
+.qt-player[hidden]{display:none !important}
+.qt-player .rp-audio{width:100%;height:40px;display:block}
+.ql-ref{color:var(--muted);font-size:.82rem;white-space:nowrap}
+.qt-list li.on .ql-title{color:var(--ink)}
+
 /* 나의 신앙생활 — 내 큐티 */
 .qt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 20px}
 .qt-stat{background:var(--gray);border-radius:var(--radius);padding:14px 10px;text-align:center}

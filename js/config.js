@@ -76,23 +76,29 @@ window.QT_SOURCE = {
   table: "qt_published"
 };
 
-/* --- 5) 성경 낭독 음원 (Cloudflare R2) --------------------------
+/* --- 5) 큐티 낭독 음원 (Cloudflare R2) --------------------------
+   큐티 음원이 올라가 있는 곳입니다. 파일 이름은 낭독 텍스트에서 계산한
+   지문으로 정해지며, 그 계산은 js/qt-audio.js 가 합니다.
+   비워 두면 기기에 들어 있는 음성으로만 읽어 줍니다. */
+window.QT_AUDIO_BASE = "https://church-files.kds08200820.workers.dev/f/tts/";
+
+/* --- 6) 성경 낭독 음원 (Cloudflare R2) --------------------------
    장 단위 mp3 가 bible-<책번호>-<장>.mp3 이름으로 올라가 있는 주소입니다.
    (책번호는 창세기 1 … 요한계시록 66)
    비워 두면 기기에 들어 있는 음성으로만 읽어 줍니다. */
 window.BIBLE_AUDIO_BASE = "https://church-files.kds08200820.workers.dev/f/bible/";
 
-/* --- 6) 사진 저장소(Cloudflare R2 워커) -------------------------
+/* --- 7) 사진 저장소(Cloudflare R2 워커) -------------------------
    비워 두면 사진은 Supabase Storage 에 저장됩니다(지금 동작).
    R2 워커 주소를 넣으면 그쪽으로 올라갑니다. 다만 그 워커가
    이 홈페이지의 Supabase 토큰을 받아 주도록 먼저 고쳐야 합니다. */
 window.R2_UPLOAD_URL = "";
 
-/* --- 7) 파일 저장소(Supabase Storage) ---------------------------
+/* --- 8) 파일 저장소(Supabase Storage) ---------------------------
    교인 사진·앨범·주보 PDF·직인 이미지가 저장되는 버킷 이름입니다.
    supabase/03_storage.sql 을 실행하면 만들어집니다. */
 window.STORAGE_BUCKET = "church";
 
-/* --- 8) 카카오톡 채널(선택) -------------------------------------
+/* --- 9) 카카오톡 채널(선택) -------------------------------------
    채널 공개 ID. 비어 있으면 푸터의 채널 버튼이 숨겨집니다. */
 window.KAKAO_CHANNEL_ID = "";

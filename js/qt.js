@@ -11,7 +11,9 @@
   var SRC = window.QT_SOURCE || null;
   var homeEl = document.getElementById("qtToday");
   var mineEl = document.getElementById("qtMine");
-  if (!SRC || !SRC.url || !SRC.key || (!homeEl && !mineEl)) return;
+  // 나의 신앙생활에서는 큐티 칸이 나중에 만들어지므로, 여기서 물러나면 안 된다.
+  // 출처 설정이 없을 때만 통째로 쉰다.
+  if (!SRC || !SRC.url || !SRC.key) return;
 
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
@@ -103,10 +105,14 @@
         '<div class="qt-peek">' + clean(today.content || "") + "</div>" +
         '<div class="qt-acts">' +
           '<button type="button" class="btn btn-solid" id="qtOpen">큐티 전문 보기</button>' +
+          '<button type="button" class="btn btn-line" id="qtListen">🔊 음성으로 듣기</button>' +
         "</div>" +
+        '<div class="qt-player" id="qtPlayer" hidden></div>' +
+        '<p class="rp-note" id="qtPlayNote" hidden></p>' +
         '<div id="qtAmen"></div>' +
       "</div>";
     document.getElementById("qtOpen").onclick = openModal;
+    bindListen();
     drawAmen();
   }
 
@@ -132,6 +138,31 @@
     });
   }
 
+  /* ── 음성으로 듣기 ── */
+  var listening = false;
+  function bindListen() {
+    var btn = document.getElementById("qtListen");
+    if (!btn || !window.QT_AUDIO) { if (btn) btn.hidden = true; return; }
+    btn.onclick = function () {
+      var box = document.getElementById("qtPlayer");
+      var note = document.getElementById("qtPlayNote");
+      if (listening) {
+        window.QT_AUDIO.stop();
+        listening = false;
+        box.hidden = true; note.hidden = true; box.innerHTML = "";
+        btn.textContent = "🔊 음성으로 듣기";
+        return;
+      }
+      listening = true;
+      btn.textContent = "🔊 듣기 그만";
+      box.hidden = false;
+      window.QT_AUDIO.play(box, today, function (msg) {
+        note.hidden = !msg;
+        note.textContent = msg || "";
+      });
+    };
+  }
+
   /* ── 아멘 체크 ── */
   function drawAmen(checked) {
     var box = document.getElementById("qtAmen");
@@ -152,7 +183,7 @@
 
   function setAmen(on) {
     var d = String(today.sermon_date).slice(0, 10);
-    rpc("toggle_qt", { p_date: d, p_on: on })
+    rpc("toggle_qt", { p_date: d, p_on: on, p_title: today.title || null, p_scripture: today.scripture || null })
       .then(function () { drawAmen(on); })
       .catch(function (e) {
         var box = document.getElementById("qtAmen");
@@ -167,8 +198,84 @@
       .catch(function () {});
   }
 
+  /* ── 성경 본문 표기를 책·장으로 읽어 낸다 ──────────────
+     "역대상 7:1~40"    → 역대상 7장
+     "역대상 4:1-6:81"  → 역대상 4~6장
+     "시편 119:169-176" → 시편 119장
+     한 절씩까지 따지지 않고 장 단위로 셉니다. 큐티는 한 장을 붙들고
+     묵상하는 것이지 절을 세는 일이 아니기 때문입니다. */
+  var BOOKS = (window.BIBLE_BOOKS || []).slice();
+  var BY_NAME = BOOKS.slice().sort(function (a, b) { return b.n.length - a.n.length; });
+
+  function parseRef(text) {
+    var s = String(text || "").replace(/\s+/g, " ").trim();
+    if (!s) return null;
+    var book = null, rest = "";
+    for (var i = 0; i < BY_NAME.length; i++) {
+      var b = BY_NAME[i];
+      var at = s.indexOf(b.n);
+      if (at >= 0) { book = b; rest = s.slice(at + b.n.length); break; }
+    }
+    if (!book) {   // 이름이 없으면 약어로 한 번 더
+      var sorted = BOOKS.slice().sort(function (a, b) { return b.a.length - a.a.length; });
+      for (var j = 0; j < sorted.length; j++) {
+        var k = s.indexOf(sorted[j].a);
+        if (k >= 0) { book = sorted[j]; rest = s.slice(k + sorted[j].a.length); break; }
+      }
+    }
+    if (!book) return null;
+
+    var chaps = [], m, re = /(\d+)\s*[:：]/g;
+    while ((m = re.exec(rest))) chaps.push(+m[1]);
+    if (!chaps.length) { re = /\d+/g; while ((m = re.exec(rest))) chaps.push(+m[0]); }
+    if (!chaps.length) return null;
+
+    var from = Math.max(1, Math.min.apply(null, chaps));
+    var to = Math.min(book.c, Math.max.apply(null, chaps));
+    if (to < from) to = from;
+    return { a: book.a, from: from, to: to };
+  }
+
+  // 내가 묵상한 큐티들 → 책별로 몇 장을 묵상했는가
+  function qtProgress(history) {
+    var got = {}, unknown = 0;
+    (history || []).forEach(function (h) {
+      var r = parseRef(h.scripture);
+      if (!r) { if (h.scripture) unknown++; return; }
+      var m = got[r.a] || (got[r.a] = {});
+      for (var c = r.from; c <= r.to; c++) m[c] = true;
+    });
+    var books = BOOKS.map(function (b) {
+      var m = got[b.a] || {};
+      var n = 0;
+      for (var c = 1; c <= b.c; c++) if (m[c]) n++;
+      return { a: b.a, n: b.n, c: b.c, t: b.t, got: n };
+    });
+    return { books: books, unknown: unknown };
+  }
+
+  function qtBookTable(books) {
+    function section(title, t) {
+      var part = books.filter(function (b) { return b.t === t; });
+      var touched = part.filter(function (b) { return b.got > 0; }).length;
+      return '<div class="bk-sec ' + (t ? "nt" : "ot") + '"><p class="bk-sec-head">' + title +
+          " <em>" + part.length + "권 중 " + touched + "권 묵상</em></p>" +
+        '<div class="bk-grid">' + part.map(function (b) {
+          var p = Math.round(b.got / b.c * 100);
+          var cls = b.got >= b.c ? "full" : (b.got ? "part" : "");
+          return '<span class="bk ' + cls + '" title="' + esc(b.n) + ' ' + b.got + "/" + b.c + '장">' +
+              '<span class="bk-name">' + esc(b.n) + (b.got >= b.c ? " ✓" : "") + "</span>" +
+              '<span class="bk-num">' + b.got + "/" + b.c + "</span>" +
+              '<span class="bk-bar"><i style="width:' + p + '%"></i></span>' +
+            "</span>";
+        }).join("") + "</div></div>";
+    }
+    return section("구약", 0) + section("신약", 1);
+  }
+
   /* ── 나의 신앙생활 — 내 큐티 내역 ── */
-  function drawMine(sum, list) {
+  function drawMine(sum, hist) {
+    var prog = qtProgress(hist);
     if (!mineEl) return;
     var recent = (sum && sum.qt_recent) || [];
     var have = {};
@@ -197,15 +304,23 @@
         "</div>" +
         '<p class="qt-cal-label">최근 한 달</p>' +
         '<div class="qt-cal">' + cells + "</div>" +
-        (list && list.length
-          ? '<ul class="qt-list">' + list.slice(0, 8).map(function (q) {
-              var k = String(q.sermon_date).slice(0, 10);
-              return "<li" + (have[k] ? ' class="on"' : "") + ">" +
-                '<span class="ql-date">' + esc(ymd(k)) + "</span>" +
-                '<span class="ql-title">' + esc(q.title || "") + "</span>" +
-                '<span class="ql-amen">' + (have[k] ? "✓ 아멘" : "") + "</span></li>";
-            }).join("") + "</ul>"
-          : "") +
+        (hist && hist.length
+          ? '<p class="qt-cal-label" style="margin-top:22px">묵상한 큐티</p>' +
+            '<ul class="qt-list">' + hist.slice(0, 12).map(function (q) {
+              return "<li class=\"on\">" +
+                '<span class="ql-date">' + esc(ymd(q.date)) + "</span>" +
+                '<span class="ql-title">' + esc(q.title || "(제목 없음)") + "</span>" +
+                '<span class="ql-ref">' + esc(q.scripture || "") + "</span></li>";
+            }).join("") + "</ul>" +
+            (hist.length > 12 ? '<p class="help" style="margin:8px 0 0">그 밖에 ' + (hist.length - 12) + "편이 더 있습니다.</p>" : "")
+          : '<p class="help" style="margin-top:18px">아직 아멘 한 큐티가 없습니다.</p>') +
+
+        /* 성경 66권 가운데 어디를 묵상했는가 */
+        '<div class="bk-wrap">' +
+          '<p class="bk-title">성경 66권 묵상 자취</p>' +
+          (prog.unknown ? '<p class="help" style="margin:-8px 0 12px">본문 표기를 읽어 내지 못한 큐티 ' + prog.unknown + "편은 셈에서 뺐습니다.</p>" : "") +
+          qtBookTable(prog.books) +
+        "</div>" +
       "</div>";
   }
 
@@ -228,7 +343,7 @@
     mineEl.innerHTML = '<div class="fin-card"><p class="qt-loading">큐티 기록을 불러오는 중…</p></div>';
     Promise.all([
       rpc("my_faith_summary", { p_plan_year: null }),
-      fetchQt(12).catch(function () { return []; })
+      rpc("my_qt_history").catch(function () { return []; })
     ]).then(function (r) {
       drawMine(r[0] || {}, r[1] || []);
     }).catch(function (e) {
