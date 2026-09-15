@@ -18,7 +18,7 @@
 
    판을 올리면(SW_VERSION) 옛 저장분을 모두 버리고 새로 시작합니다.
    ============================================================ */
-const SW_VERSION = "2026-09-15e";
+const SW_VERSION = "2026-09-16a";
 const SHELL = "bansuk-shell-" + SW_VERSION;   // 화면 파일 — 오프라인 대비용
 const ASSET = "bansuk-asset-" + SW_VERSION;   // 성경 본문처럼 변하지 않는 자료
 

@@ -140,7 +140,7 @@
         '<div class="qt-acts">' +
           '<button type="button" class="btn btn-solid" id="qtOpen">큐티 전문 보기</button>' +
           '<button type="button" class="btn btn-line" id="qtListen">🔊 음성으로 듣기</button>' +
-          '<a class="qt-past" href="qt.html#archive">지난 큐티 찾아보기</a>' +
+          '<button type="button" class="qt-past" id="qtPast">지난 큐티 찾아보기</button>' +
         "</div>" +
         '<div class="qt-player" id="qtPlayer" hidden></div>' +
         '<p class="rp-note" id="qtPlayNote" hidden></p>' +
@@ -148,6 +148,7 @@
       "</div>";
     // 클릭 이벤트가 그대로 넘어가면 그것을 큐티로 알아듣는다. 오늘 것을 또렷이 건넨다.
     document.getElementById("qtOpen").onclick = function () { openModal(today); };
+    document.getElementById("qtPast").onclick = window.__openQtArchive;
     bindListen();
     drawAmen();
   }
@@ -179,7 +180,8 @@
     function close() {
       if (window.QT_AUDIO && mOn) window.QT_AUDIO.stop();
       m.remove();
-      document.body.style.overflow = "";
+      // 찾기 창 위에 겹쳐 열린 것이면, 화면 잠금은 그 창이 닫힐 때 푼다
+      if (!document.querySelector(".qa-modal")) document.body.style.overflow = "";
     }
 
     /* 창 안에서도 들을 수 있게. 창을 닫으면 소리도 함께 멈춘다 */
@@ -203,29 +205,56 @@
   }
 
   /* ── 지난 큐티 찾아보기 (qt.html) ── */
-  window.__mountQtList = function (root) {
-    root = root || document.getElementById("qtList");
-    if (!root) return;
-    var PER = 12;
-    var st = { q: "", from: "", to: "", deep: false, offset: 0, rows: [], total: null };
+  /* ── 지난 큐티 찾아보기 — 창 하나를 띄우고, 그 안의 상자에서 찾는다 ──
+     페이지에 목록을 늘어놓으면 「더 보기」를 누를수록 아래로만 자라고 돌아올 길이 없다.
+     창은 크기가 정해져 있고, 결과는 상자 안에서만 굴러간다. 닫으면 끝. */
+  window.__openQtArchive = function () {
+    if (document.querySelector(".qa-modal")) return;
+    var PER = 20;
+    var st = { q: "", from: "", to: "", deep: false, offset: 0, rows: [], total: null, busy: false };
 
-    root.innerHTML =
-      '<form class="qa-form" id="qaForm">' +
-        '<input type="search" id="qaQ" class="qa-q" placeholder="제목 · 성경 본문 · 큐티 글 속의 낱말" aria-label="지난 큐티 찾기" />' +
-        '<input type="date" id="qaFrom" class="qa-date" aria-label="이 날부터" />' +
-        '<span class="qa-tilde">~</span>' +
-        '<input type="date" id="qaTo" class="qa-date" aria-label="이 날까지" />' +
-        '<button type="submit" class="btn btn-solid">찾기</button>' +
-        '<button type="button" class="btn btn-line" id="qaReset">처음으로</button>' +
-        '<label class="qa-deep"><input type="checkbox" id="qaDeep" /> 큐티 글 속까지 찾기</label>' +
-      "</form>" +
-      '<p class="qa-sum" id="qaSum"></p>' +
-      '<ul class="qa-list" id="qaList"></ul>' +
-      '<p class="qa-more"><button type="button" class="btn btn-line" id="qaMore" hidden>더 보기</button></p>';
+    var m = document.createElement("div");
+    m.className = "modal qa-modal";
+    m.innerHTML =
+      '<div class="modal-backdrop" data-x></div>' +
+      '<div class="modal-box qa-box" role="dialog" aria-modal="true" aria-labelledby="qaTitle">' +
+        '<button type="button" class="modal-close" data-x aria-label="닫기">&times;</button>' +
+        '<h3 class="qa-h" id="qaTitle">지난 큐티 찾아보기</h3>' +
+        '<form class="qa-form" id="qaForm">' +
+          '<input type="search" id="qaQ" class="qa-q" placeholder="제목 · 성경 본문 · 큐티 글 속의 낱말" aria-label="지난 큐티 찾기" />' +
+          '<input type="date" id="qaFrom" class="qa-date" aria-label="이 날부터" />' +
+          '<span class="qa-tilde">~</span>' +
+          '<input type="date" id="qaTo" class="qa-date" aria-label="이 날까지" />' +
+          '<button type="submit" class="btn btn-solid">찾기</button>' +
+          '<button type="button" class="btn btn-line" id="qaReset">처음으로</button>' +
+          '<label class="qa-deep"><input type="checkbox" id="qaDeep" /> 큐티 글 속까지 찾기</label>' +
+        "</form>" +
+        '<p class="qa-sum" id="qaSum"></p>' +
+        '<div class="qa-scroll" id="qaScroll">' +
+          '<ul class="qa-list" id="qaList"></ul>' +
+          '<p class="qa-more"><button type="button" class="btn btn-line" id="qaMore" hidden>더 보기</button></p>' +
+        "</div>" +
+        '<p class="qa-foot"><button type="button" class="btn btn-line" data-x>닫기</button></p>' +
+      "</div>";
+    document.body.appendChild(m);
+    document.body.style.overflow = "hidden";
 
-    var elList = root.querySelector("#qaList");
-    var elSum = root.querySelector("#qaSum");
-    var elMore = root.querySelector("#qaMore");
+    var elList = m.querySelector("#qaList");
+    var elSum = m.querySelector("#qaSum");
+    var elMore = m.querySelector("#qaMore");
+    var elScroll = m.querySelector("#qaScroll");
+
+    function close() {
+      m.remove();
+      document.removeEventListener("keydown", onKey);
+      // 전문 창이 아직 열려 있으면 그쪽이 화면 잠금을 풀 차례다
+      if (!document.querySelector(".qt-modal")) document.body.style.overflow = "";
+    }
+    function onKey(e) { if (e.key === "Escape" && !document.querySelector(".qt-modal")) close(); }
+    document.addEventListener("keydown", onKey);
+    Array.prototype.forEach.call(m.querySelectorAll("[data-x]"), function (el) {
+      el.addEventListener("click", close);
+    });
 
     function row(r) {
       return '<li class="qa-item"><button type="button" class="qa-btn" data-d="' + esc(r.sermon_date) + '">' +
@@ -235,19 +264,24 @@
         "</button></li>";
     }
 
-    function draw() {
-      elList.innerHTML = st.rows.map(row).join("");
+    function draw(appendFrom) {
+      // 이어 받을 때는 새 줄만 덧붙인다 — 상자 스크롤 자리가 튀지 않도록
+      var html = st.rows.slice(appendFrom || 0).map(row).join("");
+      if (appendFrom) elList.insertAdjacentHTML("beforeend", html); else elList.innerHTML = html;
       elMore.hidden = !(st.total != null && st.rows.length < st.total);
-      Array.prototype.forEach.call(elList.querySelectorAll(".qa-btn"), function (b) {
-        b.addEventListener("click", function () {
-          var d = b.getAttribute("data-d");
-          for (var i = 0; i < st.rows.length; i++) if (st.rows[i].sermon_date === d) return openModal(st.rows[i]);
-        });
-      });
     }
+    elList.addEventListener("click", function (e) {
+      var b = e.target.closest ? e.target.closest(".qa-btn") : null;
+      if (!b) return;
+      var d = b.getAttribute("data-d");
+      for (var i = 0; i < st.rows.length; i++) if (st.rows[i].sermon_date === d) return openModal(st.rows[i]);
+    });
 
     function load(more) {
-      if (!more) { st.offset = 0; st.rows = []; elList.innerHTML = ""; }
+      if (st.busy) return;
+      if (!more) { st.offset = 0; st.rows = []; elList.innerHTML = ""; elScroll.scrollTop = 0; }
+      st.busy = true;
+      var before = st.rows.length;
       elSum.textContent = "찾는 중…";
       searchQt({ q: st.q, from: st.from, to: st.to, deep: st.deep, limit: PER, offset: st.offset }).then(function (res) {
         st.rows = st.rows.concat(res.rows);
@@ -258,33 +292,51 @@
               (st.deep ? " 다른 낱말로 찾아보세요." : " 「큐티 글 속까지 찾기」를 켜고 다시 찾아보세요.")
                   : "아직 올라온 큐티가 없습니다.")
           : (st.q || st.from || st.to ? "찾은 큐티 " : "지난 큐티 ") + res.total + "편 가운데 " + st.rows.length + "편";
-        draw();
+        draw(more ? before : 0);
       }).catch(function (e) {
         elSum.textContent = e.message || "불러오지 못했습니다.";
         elMore.hidden = true;
-      });
+      }).then(function () { st.busy = false; });
     }
 
-    root.querySelector("#qaForm").addEventListener("submit", function (e) {
+    m.querySelector("#qaForm").addEventListener("submit", function (e) {
       e.preventDefault();
-      st.q = root.querySelector("#qaQ").value;
-      st.from = root.querySelector("#qaFrom").value;
-      st.to = root.querySelector("#qaTo").value;
-      st.deep = root.querySelector("#qaDeep").checked;
+      st.q = m.querySelector("#qaQ").value;
+      st.from = m.querySelector("#qaFrom").value;
+      st.to = m.querySelector("#qaTo").value;
+      st.deep = m.querySelector("#qaDeep").checked;
       load(false);
     });
-    root.querySelector("#qaReset").addEventListener("click", function () {
-      root.querySelector("#qaQ").value = "";
-      root.querySelector("#qaFrom").value = "";
-      root.querySelector("#qaTo").value = "";
-      root.querySelector("#qaDeep").checked = false;
+    m.querySelector("#qaReset").addEventListener("click", function () {
+      m.querySelector("#qaQ").value = "";
+      m.querySelector("#qaFrom").value = "";
+      m.querySelector("#qaTo").value = "";
+      m.querySelector("#qaDeep").checked = false;
       st.q = st.from = st.to = "";
       st.deep = false;
       load(false);
     });
     elMore.addEventListener("click", function () { load(true); });
+    // 상자 바닥까지 굴리면 다음 묶음을 알아서 이어 받는다
+    elScroll.addEventListener("scroll", function () {
+      if (elMore.hidden || st.busy) return;
+      if (elScroll.scrollTop + elScroll.clientHeight >= elScroll.scrollHeight - 40) load(true);
+    });
 
     load(false);
+    setTimeout(function () { var i = m.querySelector("#qaQ"); if (i) i.focus(); }, 50);
+  };
+
+  /* qt.html 의 자리에는 창을 여는 단추 하나만 둔다 */
+  window.__mountQtList = function (root) {
+    root = root || document.getElementById("qtList");
+    if (!root) return;
+    root.innerHTML =
+      '<p class="qa-launch">' +
+        '<button type="button" class="btn btn-solid" id="qaOpen">지난 큐티 찾아보기</button>' +
+        '<span class="help">창이 열리고, 그 안에서 낱말이나 날짜로 찾습니다.</span>' +
+      "</p>";
+    root.querySelector("#qaOpen").addEventListener("click", window.__openQtArchive);
   };
 
   /* ── 음성으로 듣기 ── */
